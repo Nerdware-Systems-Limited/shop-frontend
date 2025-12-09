@@ -26,7 +26,6 @@ const Products = () => {
       ordering: sortBy,
       search: searchParams.get('search') || '',
     };
-    console.log('Fetching products with params:', params);
 
     dispatch(listProducts(params));
   }, [dispatch, filters, sortBy, searchParams]);

@@ -1,12 +1,20 @@
 import { Link, useNavigate } from 'react-router-dom';
+import { useSelector } from 'react-redux';
 import { Search, ShoppingBag, User, Menu } from 'lucide-react';
 import { useState } from 'react';
 import logo from '../../assets/logo.png';
+import MiniCart from '../products/MiniCart';
 
 const Header = () => {
   const [searchQuery, setSearchQuery] = useState('');
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
+  const [isCartOpen, setIsCartOpen] = useState(false);
   const navigate = useNavigate();
+
+  const { cartItems } = useSelector((state) => state.cart);
+  const cartCount = cartItems.reduce((acc, item) => acc + item.qty, 0);
+
+  // console.log('Cart Items in Header:', cartItems);
 
   const handleSearch = (e) => {
     e.preventDefault();
@@ -93,14 +101,18 @@ const Header = () => {
             </form>
 
             {/* Icons */}
+            <Link to="/profile" className="hidden md:block">
             <button className="p-2 hover:opacity-60 transition-opacity">
               <User className="w-5 h-5" />
             </button>
-            <button className="p-2 hover:opacity-60 transition-opacity relative">
+            </Link>
+            <button onClick={() => setIsCartOpen(true)} className="p-2 hover:opacity-60 transition-opacity relative">
               <ShoppingBag className="w-5 h-5" />
-              <span className="absolute top-0 right-0 w-4 h-4 bg-black text-white text-[9px] flex items-center justify-center">
-                0
-              </span>
+              {cartCount > 0 && (
+                <span className="absolute top-0 right-0 w-4 h-4 bg-black text-white text-[9px] flex items-center justify-center">
+                  {cartCount > 99 ? '99+' : cartCount}
+                </span>
+              )}
             </button>
           </div>
         </div>
@@ -157,6 +169,15 @@ const Header = () => {
           </nav>
         </div>
       )}
+      {/* Mobile Menu */}
+      {mobileMenuOpen && (
+        <div className="lg:hidden border-t border-black bg-white">
+          {/* ... existing mobile menu code ... */}
+        </div>
+      )}
+
+      {/* Add MiniCart - Import from your components */}
+      <MiniCart isOpen={isCartOpen} onClose={() => setIsCartOpen(false)} />
     </header>
   );
 };

@@ -1,19 +1,17 @@
 import { useEffect } from 'react';
 import { useDispatch, useSelector } from 'react-redux';
 import { Link } from 'react-router-dom';
-import { listProducts } from '../actions/productActions';
+import { getFeaturedProducts } from '../actions/productActions';
 import ProductGrid from '../components/products/ProductGrid';
 import { ChevronRight } from 'lucide-react';
 
 const Home = () => {
   const dispatch = useDispatch();
-  const { products, loading, error } = useSelector((state) => state.productList);
+  const { products: featuredProducts, loading, error } = useSelector((state) => state.featuredProducts);
 
   useEffect(() => {
-    dispatch(listProducts({ ordering: '-created_at' }));
+    dispatch(getFeaturedProducts());
   }, [dispatch]);
-
-  const featuredProducts = products?.filter(p => p.is_featured).slice(0, 4) || [];
 
   return (
     <div className="min-h-screen">

@@ -17,7 +17,7 @@ import PlaceOrder from './pages/customer/PlaceOrder';
 import About from './pages/About';
 import Contact from './pages/Contact';
 import NotFound from './pages/NotFound';
-import { MyOrders } from './pages/customer/myOrders';
+import MyOrders from './pages/customer/myOrders';
 import OrderDetails from './pages/OrderDetails';
 import { InventoryDashboard } from './pages/admin/inventory/InventoryDashboard';
 import { WarehouseManager } from './pages/admin/inventory/WarehouseManager';

@@ -22,6 +22,7 @@ import OrderDetails from './pages/OrderDetails';
 import { InventoryDashboard } from './pages/admin/inventory/InventoryDashboard';
 import { WarehouseManager } from './pages/admin/inventory/WarehouseManager';
 import AdminProductsPage from './pages/admin/products/AdminProductsPage';
+import OrderSuccess from './pages/customer/OrderSuccess'
 
 function App() {
   const [completed, setCompleted] = useState({});
@@ -46,6 +47,7 @@ function App() {
               <Route path="/placeorder" element={<PlaceOrder setCompleted={setCompleted} completed={completed}/>} />
               <Route path="/myorders" element={<MyOrders />} />
               <Route path="/order/:id" element={<OrderDetails />} />
+              <Route path="/order/:orderNumber/success" element={<OrderSuccess />} />
               <Route path="/admin/products" element={<AdminProductsPage />} />
               <Route path="/admin/inventory" element={<InventoryDashboard />} />
               <Route path="/admin/inventory/warehouses" element={<WarehouseManager />} />

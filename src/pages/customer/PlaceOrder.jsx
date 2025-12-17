@@ -14,6 +14,7 @@ import { Badge } from '../../components/ui/badge';
 import { Separator } from '../../components/ui/separator';
 import { Alert, AlertDescription } from '../../components/ui/alert';
 import { Skeleton } from '../../components/ui/skeleton';
+import { initiateMpesaPayment } from '../../actions/paymentActions';
 import { 
   Home, 
   CreditCard, 
@@ -103,11 +104,11 @@ function PlaceOrder({ setCompleted }) {
       navigate('/shipping');
       return;
     }
-    if (!cart.paymentMethod) {
+    if (!cart.paymentMethod.method) {
       navigate('/payment');
       return;
     }
-  }, [cart.shippingAddress, cart.paymentMethod, navigate]);
+  }, [cart.shippingAddress, cart.paymentMethod.method, navigate]);
   
   // Fetch shipping methods on mount with error handling
   useEffect(() => {
@@ -140,11 +141,12 @@ function PlaceOrder({ setCompleted }) {
   // Calculate shipping quote when shipping method changes
   useEffect(() => {
     if (!selectedShipping || !cart.shippingAddress || !cart.cartItems?.length) return;
+    console.log(cart.cartItems);
 
     const calculateShipping = async () => {
       try {
         const items = cart.cartItems.map(item => ({
-          product_id: item.id,
+          product_id: item.product, // ✅ Get product ID, not cart item ID
           quantity: item.qty || item.quantity || 1,
         }));
 
@@ -193,7 +195,7 @@ function PlaceOrder({ setCompleted }) {
   }, []);
 
   const placeOrder = async () => {
-    if (!cart.cartItems?.length || !cart.shippingAddress || !cart.paymentMethod) {
+    if (!cart.cartItems?.length || !cart.shippingAddress || !cart.paymentMethod.method) {
       return;
     }
     
@@ -208,7 +210,8 @@ function PlaceOrder({ setCompleted }) {
       shipping_method_id: selectedShipping?.id || null,
       use_default_address: false,
       customer_notes: cart.notes || '',
-      payment_method: cart.paymentMethod,
+      payment_method: cart.paymentMethod.method,
+      payment_number: cart.paymentMethod.mpesaNumber || null,
       discount_code: cart.discountCode || '',
       is_gift: cart.isGift || false,
       gift_message: cart.giftMessage || '',
@@ -360,9 +363,9 @@ function PlaceOrder({ setCompleted }) {
                   <ShieldCheck className="h-5 w-5 text-green-500" />
                   <div>
                     <p className="font-medium text-gray-900">
-                      {cart.paymentMethod === 'MPesa' && 'MPesa'}
-                      {cart.paymentMethod === 'PayPal' && 'PayPal'}
-                      {cart.paymentMethod === 'OnDelivery' && 'Cash On Delivery'}
+                      {cart.paymentMethod.method === 'MPesa' && 'MPesa ' + cart.paymentMethod.mpesaNumber }
+                      {cart.paymentMethod.method === 'PayPal' && 'PayPal'}
+                      {cart.paymentMethod.method === 'OnDelivery' && 'Cash On Delivery'}
                     </p>
                     <p className="text-sm text-gray-500">Secured by SSL encryption</p>
                   </div>

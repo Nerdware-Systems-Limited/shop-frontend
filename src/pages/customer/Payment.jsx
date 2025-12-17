@@ -12,6 +12,7 @@ function Payment({ setCompleted, completed }) {
     const dispatch = useDispatch()
 
     const [paymentMethod, setPaymentMethod] = useState('MPesa')
+    const [mpesaNumber, setMpesaNumber] = useState("");
 
     const paymentOptions = [
         {
@@ -39,8 +40,17 @@ function Payment({ setCompleted, completed }) {
 
     const submitHandler = (e) => {
         e.preventDefault()
-        setCompleted((prevCompleted) => ({ ...prevCompleted, 1: true }))
-        dispatch(savePaymentMethod(paymentMethod))
+        if (paymentMethod === "MPesa" && !mpesaNumber) {
+            alert("Please enter your M-Pesa phone number.");
+            return;
+        }
+
+        setCompleted((prevCompleted) => ({ ...prevCompleted, 1: true }));
+
+        dispatch(savePaymentMethod({
+            method: paymentMethod,
+            mpesaNumber: mpesaNumber,
+        }));
         navigate('/placeorder')
     }
 
@@ -137,6 +147,24 @@ function Payment({ setCompleted, completed }) {
                     </div>
 
                     {/* Info Box */}
+                    {paymentMethod === "MPesa" && (
+                        <div className="border border-black p-4">
+                            <label className="text-xs uppercase tracking-widest font-medium mb-2 block">
+                                M-Pesa Phone Number
+                            </label>
+                            <input
+                                type="text"
+                                value={mpesaNumber}
+                                onChange={(e) => setMpesaNumber(e.target.value)}
+                                placeholder="07XXXXXXXX"
+                                className="w-full border border-black px-3 py-2 text-sm focus:outline-none focus:ring-0 bg-white"
+                            />
+                            <p className="text-xs text-gray-600 mt-2">
+                                Enter the M-Pesa number you want to pay with.
+                            </p>
+                        </div>
+                    )}
+
                     <div className="border border-black p-4 mt-8">
                         <div className="flex gap-3">
                             <CreditCard className="w-5 h-5 flex-shrink-0 mt-0.5" />

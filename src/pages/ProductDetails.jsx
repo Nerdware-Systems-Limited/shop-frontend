@@ -31,6 +31,7 @@ const ProductDetails = () => {
     }).format(price);
   };
 
+
   const handleAddToCart = () => {
     // Add to cart logic here
     console.log('Adding to cart:', { product, quantity });

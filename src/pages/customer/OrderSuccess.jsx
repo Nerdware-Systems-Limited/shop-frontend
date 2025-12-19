@@ -30,9 +30,14 @@ function OrderSuccess() {
 
   const order = location.state?.order;
   const cart = useSelector(state => state.cart || {});
-  const mpesaPaymentStatus = useSelector(state => state.mpesaPaymentStatus || {});
+  // Safer approach
+const mpesaPaymentStatus = useSelector(state => state.mpesaPaymentStatus || {});
+const loading = mpesaPaymentStatus.loading || false;
+const success = mpesaPaymentStatus.success || false;
+const statusInfo = mpesaPaymentStatus.statusInfo || null;
 
-  console.log(mpesaPaymentStatus, order)
+
+  console.log(order)
 
   const [paymentStatus, setPaymentStatus] = useState('pending');
   const [mpesaTransaction, setMpesaTransaction] = useState(null);
@@ -60,7 +65,7 @@ function OrderSuccess() {
       if (transaction.status === 'completed' && transaction.result_code === 0) {
         setPaymentStatus('completed');
         setShowMpesaPrompt(false);
-      } else if (transaction.status === 'failed') {
+      } else if (transaction.status === 'failed' || 'cancelled') {
         setPaymentStatus('failed');
         setShowMpesaPrompt(false);
       } else if (transaction.status === 'timeout') {
@@ -70,11 +75,20 @@ function OrderSuccess() {
     }
   }, [mpesaPaymentStatus.statusInfo]);
 
+  console.log("yo we here", mpesaPaymentStatus)
+
   // Poll M-Pesa payment status
   useEffect(() => {
-    if (!isMpesaPayment || !order?.mpesa_checkout_request_id) return;
+    if (!isMpesaPayment || !order?.mpesa_checkout_request_id) {
+      console.log("Skipping M-Pesa polling:", { 
+        isMpesaPayment, 
+        hasCheckoutId: !!order?.mpesa_checkout_request_id 
+      });
+      return;
+    }
 
-    setShowMpesaPrompt(true);
+    // setShowMpesaPrompt(true);
+    console.log("Cunt shit")
 
     const interval = setInterval(() => {
       if (pollCount < maxPollAttempts && paymentStatus === 'pending') {

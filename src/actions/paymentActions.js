@@ -70,7 +70,7 @@ export const listMpesaConfigurations = () => async (dispatch) => {
   try {
     dispatch({ type: MPESA_CONFIG_LIST_REQUEST });
 
-    const { data } = await apiClient.get('/mpesa/configurations/');
+    const { data } = await apiClient.get('/payments/configurations/');
 
     dispatch({
       type: MPESA_CONFIG_LIST_SUCCESS,
@@ -90,7 +90,7 @@ export const getMpesaConfigurationDetails = (id) => async (dispatch) => {
   try {
     dispatch({ type: MPESA_CONFIG_DETAILS_REQUEST });
 
-    const { data } = await apiClient.get(`/mpesa/configurations/${id}/`);
+    const { data } = await apiClient.get(`/payments/configurations/${id}/`);
 
     dispatch({
       type: MPESA_CONFIG_DETAILS_SUCCESS,
@@ -110,7 +110,7 @@ export const setDefaultMpesaConfiguration = (id) => async (dispatch) => {
   try {
     dispatch({ type: MPESA_CONFIG_SET_DEFAULT_REQUEST });
 
-    const { data } = await apiClient.post(`/mpesa/configurations/${id}/set_default/`);
+    const { data } = await apiClient.post(`/payments/configurations/${id}/set_default/`);
 
     dispatch({
       type: MPESA_CONFIG_SET_DEFAULT_SUCCESS,
@@ -133,7 +133,7 @@ export const testMpesaConnection = (id) => async (dispatch) => {
   try {
     dispatch({ type: MPESA_CONFIG_TEST_REQUEST });
 
-    const { data } = await apiClient.post(`/mpesa/configurations/${id}/test_connection/`);
+    const { data } = await apiClient.post(`/payments/configurations/${id}/test_connection/`);
 
     dispatch({
       type: MPESA_CONFIG_TEST_SUCCESS,
@@ -174,7 +174,7 @@ export const listMpesaTransactions = (params = {}) => async (dispatch) => {
     if (params.page_size) queryParams.append('page_size', params.page_size);
     if (params.ordering) queryParams.append('ordering', params.ordering);
 
-    const { data } = await apiClient.get(`/mpesa/transactions/?${queryParams.toString()}`);
+    const { data } = await apiClient.get(`/payments/transactions/?${queryParams.toString()}`);
 
     dispatch({
       type: MPESA_TRANSACTION_LIST_SUCCESS,
@@ -199,7 +199,7 @@ export const getMpesaTransactionDetails = (id) => async (dispatch) => {
   try {
     dispatch({ type: MPESA_TRANSACTION_DETAILS_REQUEST });
 
-    const { data } = await apiClient.get(`/mpesa/transactions/${id}/`);
+    const { data } = await apiClient.get(`/payments/transactions/${id}/`);
 
     dispatch({
       type: MPESA_TRANSACTION_DETAILS_SUCCESS,
@@ -229,7 +229,7 @@ export const getMyMpesaTransactions = (params = {}) => async (dispatch) => {
     if (params.page) queryParams.append('page', params.page);
     if (params.ordering) queryParams.append('ordering', params.ordering);
 
-    const { data } = await apiClient.get(`/mpesa/transactions/my_transactions/?${queryParams.toString()}`);
+    const { data } = await apiClient.get(`/payments/transactions/my_transactions/?${queryParams.toString()}`);
 
     dispatch({
       type: MY_MPESA_TRANSACTIONS_SUCCESS,
@@ -249,7 +249,7 @@ export const retryMpesaTransaction = (id) => async (dispatch) => {
   try {
     dispatch({ type: MPESA_TRANSACTION_RETRY_REQUEST });
 
-    const { data } = await apiClient.post(`/mpesa/transactions/${id}/retry/`);
+    const { data } = await apiClient.post(`/payments/transactions/${id}/retry/`);
 
     dispatch({
       type: MPESA_TRANSACTION_RETRY_SUCCESS,
@@ -272,7 +272,7 @@ export const getMpesaTransactionStats = () => async (dispatch) => {
   try {
     dispatch({ type: MPESA_TRANSACTION_STATS_REQUEST });
 
-    const { data } = await apiClient.get('/mpesa/transactions/stats/');
+    const { data } = await apiClient.get('/payments/transactions/stats/');
 
     dispatch({
       type: MPESA_TRANSACTION_STATS_SUCCESS,
@@ -294,7 +294,7 @@ export const initiateMpesaPayment = (paymentData) => async (dispatch) => {
   try {
     dispatch({ type: MPESA_PAYMENT_INITIATE_REQUEST });
 
-    const { data } = await apiClient.post('/mpesa/initiate/', paymentData);
+    const { data } = await apiClient.post('/payments/initiate/', paymentData);
 
     dispatch({
       type: MPESA_PAYMENT_INITIATE_SUCCESS,
@@ -322,7 +322,7 @@ export const checkMpesaPaymentStatus = (statusData) => async (dispatch) => {
   try {
     dispatch({ type: MPESA_PAYMENT_STATUS_REQUEST });
 
-    const { data } = await apiClient.post('/mpesa/check-status/', statusData);
+    const { data } = await apiClient.post('/payments/check-status/', statusData);
 
     dispatch({
       type: MPESA_PAYMENT_STATUS_SUCCESS,
@@ -356,7 +356,7 @@ export const listMpesaRefunds = (params = {}) => async (dispatch) => {
     if (params.status) queryParams.append('status', params.status);
     if (params.page) queryParams.append('page', params.page);
 
-    const { data } = await apiClient.get(`/mpesa/refunds/?${queryParams.toString()}`);
+    const { data } = await apiClient.get(`/payments/refunds/?${queryParams.toString()}`);
 
     dispatch({
       type: MPESA_REFUND_LIST_SUCCESS,
@@ -376,7 +376,7 @@ export const getMpesaRefundDetails = (id) => async (dispatch) => {
   try {
     dispatch({ type: MPESA_REFUND_DETAILS_REQUEST });
 
-    const { data } = await apiClient.get(`/mpesa/refunds/${id}/`);
+    const { data } = await apiClient.get(`/payments/refunds/${id}/`);
 
     dispatch({
       type: MPESA_REFUND_DETAILS_SUCCESS,
@@ -396,7 +396,7 @@ export const processMpesaRefund = (refundData) => async (dispatch) => {
   try {
     dispatch({ type: MPESA_REFUND_PROCESS_REQUEST });
 
-    const { data } = await apiClient.post('/mpesa/process-refund/', refundData);
+    const { data } = await apiClient.post('/payments/process-refund/', refundData);
 
     dispatch({
       type: MPESA_REFUND_PROCESS_SUCCESS,
@@ -421,7 +421,7 @@ export const listMpesaPaymentMethods = () => async (dispatch) => {
   try {
     dispatch({ type: MPESA_PAYMENT_METHOD_LIST_REQUEST });
 
-    const { data } = await apiClient.get('/mpesa/payment-methods/');
+    const { data } = await apiClient.get('/payments/payment-methods/');
 
     dispatch({
       type: MPESA_PAYMENT_METHOD_LIST_SUCCESS,
@@ -441,7 +441,7 @@ export const createMpesaPaymentMethod = (methodData) => async (dispatch) => {
   try {
     dispatch({ type: MPESA_PAYMENT_METHOD_CREATE_REQUEST });
 
-    const { data } = await apiClient.post('/mpesa/payment-methods/', methodData);
+    const { data } = await apiClient.post('/payments/payment-methods/', methodData);
 
     dispatch({
       type: MPESA_PAYMENT_METHOD_CREATE_SUCCESS,
@@ -470,7 +470,7 @@ export const deleteMpesaPaymentMethod = (id) => async (dispatch) => {
   try {
     dispatch({ type: MPESA_PAYMENT_METHOD_DELETE_REQUEST });
 
-    await apiClient.delete(`/mpesa/payment-methods/${id}/`);
+    await apiClient.delete(`/payments/payment-methods/${id}/`);
 
     dispatch({
       type: MPESA_PAYMENT_METHOD_DELETE_SUCCESS,
@@ -493,7 +493,7 @@ export const setDefaultMpesaPaymentMethod = (id) => async (dispatch) => {
   try {
     dispatch({ type: MPESA_PAYMENT_METHOD_SET_DEFAULT_REQUEST });
 
-    const { data } = await apiClient.post(`/mpesa/payment-methods/${id}/set_default/`);
+    const { data } = await apiClient.post(`/payments/payment-methods/${id}/set_default/`);
 
     dispatch({
       type: MPESA_PAYMENT_METHOD_SET_DEFAULT_SUCCESS,

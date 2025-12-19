@@ -48,9 +48,6 @@ function App() {
               <Route path="/myorders" element={<MyOrders />} />
               <Route path="/order/:id" element={<OrderDetails />} />
               <Route path="/order/:orderNumber/success" element={<OrderSuccess />} />
-              <Route path="/admin/products" element={<AdminProductsPage />} />
-              <Route path="/admin/inventory" element={<InventoryDashboard />} />
-              <Route path="/admin/inventory/warehouses" element={<WarehouseManager />} />
               <Route path="*" element={<NotFound />} />
             </Routes>
           </main>

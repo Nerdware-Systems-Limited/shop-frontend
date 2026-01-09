@@ -24,8 +24,9 @@ apiClient.interceptors.response.use(
   (response) => response,
   (error) => {
     if (error.response?.status === 401) {
+       // Only clear tokens, do NOT redirect
       localStorage.removeItem('accessToken');
-      window.location.href = '/login';
+      localStorage.removeItem('refreshToken');
     }
     return Promise.reject(error);
   }

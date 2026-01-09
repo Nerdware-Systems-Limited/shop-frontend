@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { BrowserRouter as Router, Routes, Route } from 'react-router-dom';
 import { Provider } from 'react-redux';
 import store from './store';
@@ -19,13 +19,36 @@ import Contact from './pages/Contact';
 import NotFound from './pages/NotFound';
 import MyOrders from './pages/customer/MyOrders';
 import OrderDetails from './pages/OrderDetails';
-import { InventoryDashboard } from './pages/admin/inventory/InventoryDashboard';
-import { WarehouseManager } from './pages/admin/inventory/WarehouseManager';
-import AdminProductsPage from './pages/admin/products/AdminProductsPage';
 import OrderSuccess from './pages/customer/OrderSuccess'
+import ForgotPassword from './pages/customer/ForgotPassword';
+import TermsOfService from './pages/TermsOfService';
+import PrivacyPolicy from './pages/PrivacyPolicy';
+import ResetPassword from './pages/customer/ResetPassword';
+import ShippingPolicy from './pages/ShippingPolicy';
+import ReturnsExchanges from './pages/ReturnsExchanges';
 
 function App() {
-  const [completed, setCompleted] = useState({});
+  // ✅ UPDATE THIS: Persist completion state
+  const [completed, setCompleted] = useState(() => {
+    const saved = localStorage.getItem('checkoutCompleted');
+    return saved ? JSON.parse(saved) : {};
+  });
+
+  // ✅ ADD THIS: Save to localStorage when it changes
+  useEffect(() => {
+    localStorage.setItem('checkoutCompleted', JSON.stringify(completed));
+  }, [completed]);
+
+  // ✅ ADD THIS: Clear completion state when order is successful
+  useEffect(() => {
+    const handleOrderSuccess = () => {
+      setCompleted({});
+      localStorage.removeItem('checkoutCompleted');
+    };
+
+    window.addEventListener('orderSuccess', handleOrderSuccess);
+    return () => window.removeEventListener('orderSuccess', handleOrderSuccess);
+  }, []);
   return (
     <Provider store={store}>
       <Router>
@@ -40,6 +63,8 @@ function App() {
               <Route path="/contact" element={<Contact />} />
               <Route path="/cart" element={<Cart />} />
               <Route path="/login" element={<Login />} />
+              <Route path='forgot-password' element={<ForgotPassword />} />
+              <Route path='reset-password' element={<ResetPassword />} />
               <Route path="/profile" element={<Profile />} />
               <Route path="/register" element={<Register />} />
               <Route path="/shipping" element={<Shipping setCompleted={setCompleted} completed={completed} />} />
@@ -48,6 +73,10 @@ function App() {
               <Route path="/myorders" element={<MyOrders />} />
               <Route path="/order/:id" element={<OrderDetails />} />
               <Route path="/order/:orderNumber/success" element={<OrderSuccess />} />
+              <Route path="/terms" element={<TermsOfService />} />
+              <Route path="/privacy" element={<PrivacyPolicy />} />
+              <Route path="/shipping-policy" element={<ShippingPolicy />} />
+              <Route path="/returns" element={<ReturnsExchanges />} />  
               <Route path="*" element={<NotFound />} />
             </Routes>
           </main>

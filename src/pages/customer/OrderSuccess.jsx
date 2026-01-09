@@ -75,7 +75,6 @@ const statusInfo = mpesaPaymentStatus.statusInfo || null;
     }
   }, [mpesaPaymentStatus.statusInfo]);
 
-  console.log("yo we here", mpesaPaymentStatus)
 
   // Poll M-Pesa payment status
   useEffect(() => {
@@ -88,7 +87,6 @@ const statusInfo = mpesaPaymentStatus.statusInfo || null;
     }
 
     // setShowMpesaPrompt(true);
-    console.log("Cunt shit")
 
     const interval = setInterval(() => {
       if (pollCount < maxPollAttempts && paymentStatus === 'pending') {
@@ -368,21 +366,21 @@ const statusInfo = mpesaPaymentStatus.statusInfo || null;
             <div className="space-y-3 text-sm">
               <div className="flex justify-between">
                 <span className="text-gray-600">Subtotal</span>
-                <span>KSH {order.items_price?.toFixed(2) || '0.00'}</span>
+                <span>KSH {order.subtotal || '0.00'}</span>
               </div>
               <div className="flex justify-between">
                 <span className="text-gray-600">Shipping</span>
                 <span>
-                  {order.shipping_price === 0 ? 'FREE' : `KSH ${order.shipping_price?.toFixed(2) || 'TBD'}`}
+                  {order.shipping_cost === 0 ? 'FREE' : `KSH ${order.shipping_cost || 'TBD'}`}
                 </span>
               </div>
               <div className="flex justify-between">
                 <span className="text-gray-600">Tax</span>
-                <span>KSH {order.tax_price?.toFixed(2) || '0.00'}</span>
+                <span>KSH {order.tax_amount || '0.00'}</span>
               </div>
               <div className="flex justify-between pt-3 border-t border-gray-200 font-light text-base">
                 <span>Total</span>
-                <span>KSH {order.total_price?.toFixed(2) || '0.00'}</span>
+                <span>KSH {order.total || '0.00'}</span>
               </div>
               <div className="flex items-center gap-2 pt-2 text-gray-600">
                 <CreditCard className="h-3 w-3" strokeWidth={1.5} />

@@ -43,6 +43,18 @@ import {
   LOYALTY_POINTS_ADD_REQUEST,
   LOYALTY_POINTS_ADD_SUCCESS,
   LOYALTY_POINTS_ADD_FAIL,
+  PASSWORD_RESET_REQUEST,
+  PASSWORD_RESET_SUCCESS,
+  PASSWORD_RESET_FAIL,
+  PASSWORD_RESET_RESET,
+  PASSWORD_RESET_VERIFY_REQUEST,
+  PASSWORD_RESET_VERIFY_SUCCESS,
+  PASSWORD_RESET_VERIFY_FAIL,
+  PASSWORD_RESET_VERIFY_RESET,
+  PASSWORD_RESET_CONFIRM_REQUEST,
+  PASSWORD_RESET_CONFIRM_SUCCESS,
+  PASSWORD_RESET_CONFIRM_FAIL,
+  PASSWORD_RESET_CONFIRM_RESET,
 } from '../constants/customerConstants';
 
 // Login user
@@ -59,6 +71,8 @@ export const login = (username, password) => async (dispatch) => {
       type: USER_LOGIN_SUCCESS,
       payload: data,
     });
+
+    // console.log(data);
 
     // Store tokens in localStorage
     localStorage.setItem('accessToken', data.access);
@@ -89,6 +103,8 @@ export const register = (userData) => async (dispatch) => {
       type: USER_REGISTER_SUCCESS,
       payload: data,
     });
+
+    console.log("Register Data", data)
 
     // Store tokens in localStorage
     localStorage.setItem('accessToken', data.tokens.access);
@@ -398,4 +414,96 @@ export const addLoyaltyPoints = (customerId, points) => async (dispatch) => {
         'Failed to add loyalty points',
     });
   }
+};
+
+// Request password reset
+export const requestPasswordReset = (email) => async (dispatch) => {
+  try {
+    dispatch({ type: PASSWORD_RESET_REQUEST });
+
+    const { data } = await apiClient.post('/customers/password/reset/', {
+      email,
+    });
+
+    dispatch({
+      type: PASSWORD_RESET_SUCCESS,
+      payload: data,
+    });
+  } catch (error) {
+    dispatch({
+      type: PASSWORD_RESET_FAIL,
+      payload:
+        error.response?.data?.message ||
+        error.response?.data?.detail ||
+        error.message ||
+        'Failed to request password reset',
+    });
+  }
+};
+
+// Reset password reset state
+export const resetPasswordReset = () => (dispatch) => {
+  dispatch({ type: PASSWORD_RESET_RESET });
+};
+
+// Verify password reset code
+export const verifyResetCode = (uid, token, code) => async (dispatch) => {
+  try {
+    dispatch({ type: PASSWORD_RESET_VERIFY_REQUEST });
+
+    const { data } = await apiClient.post('/customers/password/reset/verify/', {
+      uid,
+      token,
+      code,
+    });
+
+    dispatch({
+      type: PASSWORD_RESET_VERIFY_SUCCESS,
+      payload: data,
+    });
+  } catch (error) {
+    dispatch({
+      type: PASSWORD_RESET_VERIFY_FAIL,
+      payload:
+        error.response?.data?.message ||
+        error.response?.data?.detail ||
+        error.response?.data?.code?.[0] ||
+        error.message ||
+        'Invalid or expired reset code',
+    });
+  }
+};
+
+// Reset verify code state
+export const resetVerifyCode = () => (dispatch) => {
+  dispatch({ type: PASSWORD_RESET_VERIFY_RESET });
+};
+
+// Confirm password reset
+export const confirmPasswordReset = (resetData) => async (dispatch) => {
+  try {
+    dispatch({ type: PASSWORD_RESET_CONFIRM_REQUEST });
+
+    const { data } = await apiClient.post('/customers/password/reset/confirm/', resetData);
+
+    dispatch({
+      type: PASSWORD_RESET_CONFIRM_SUCCESS,
+      payload: data,
+    });
+  } catch (error) {
+    dispatch({
+      type: PASSWORD_RESET_CONFIRM_FAIL,
+      payload:
+        error.response?.data?.message ||
+        error.response?.data?.detail ||
+        error.response?.data?.new_password?.[0] ||
+        error.message ||
+        'Failed to reset password',
+    });
+  }
+};
+
+// Reset confirm password state
+export const resetConfirmPassword = () => (dispatch) => {
+  dispatch({ type: PASSWORD_RESET_CONFIRM_RESET });
 };

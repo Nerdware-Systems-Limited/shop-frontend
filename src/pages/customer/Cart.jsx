@@ -39,6 +39,10 @@ const Cart = () => {
   const [lastRemovedItem, setLastRemovedItem] = useState(null);
   const [isLoading, setIsLoading] = useState(true);
 
+  const userLogin = useSelector((state) => state.userLogin);
+  const { userInfo } = userLogin;
+
+
   const qty = Number(searchParams.get('qty')) || 1;
   const productId = Number(id);
 

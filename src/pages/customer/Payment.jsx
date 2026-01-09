@@ -1,5 +1,5 @@
-import React, { useState } from 'react'
-import { useDispatch } from 'react-redux'
+import { useState, useEffect } from 'react'
+import { useDispatch, useSelector } from 'react-redux'
 import CheckoutSteps from '../../components/checkout/CheckoutSteps'
 import { savePaymentMethod } from '../../actions/cartActions'
 import { useNavigate } from 'react-router-dom'
@@ -28,15 +28,20 @@ function Payment({ setCompleted, completed }) {
             description: 'Pay when you receive your order',
             icon: Banknote,
             recommended: false
-        },
-        {
-            id: 'PayPal',
-            label: 'PayPal',
-            description: 'Pay with your PayPal account',
-            icon: CreditCard,
-            recommended: false
         }
     ]
+
+    const cart = useSelector((state) => state.cart);
+    
+    useEffect(() => {
+      if (cart.paymentMethod?.method) {
+        setPaymentMethod(cart.paymentMethod.method);
+      }
+      if (cart.paymentMethod?.mpesaNumber) {
+        setMpesaNumber(cart.paymentMethod.mpesaNumber);
+      }
+    }, [cart.paymentMethod]);
+
 
     const submitHandler = (e) => {
         e.preventDefault()
@@ -45,7 +50,11 @@ function Payment({ setCompleted, completed }) {
             return;
         }
 
-        setCompleted((prevCompleted) => ({ ...prevCompleted, 1: true }));
+        setCompleted((prevCompleted) => ({ 
+          ...prevCompleted, 
+          0: true, // Keep shipping completed
+          1: true  // Mark payment completed
+        }));
 
         dispatch(savePaymentMethod({
             method: paymentMethod,
@@ -67,7 +76,7 @@ function Payment({ setCompleted, completed }) {
 
             {/* Checkout Steps */}
             <div className="border-b border-black/10">
-                <CheckoutSteps step_active="1" completed={completed} />
+                <CheckoutSteps step_active={1} completed={completed} />
             </div>
 
             {/* Main Content */}

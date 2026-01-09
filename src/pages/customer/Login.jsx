@@ -4,22 +4,25 @@ import { useDispatch, useSelector } from 'react-redux';
 import { z } from 'zod';
 import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
+import { Eye, EyeOff, Mail, Lock, ArrowLeft, AlertCircle } from 'lucide-react';
 
 // Shadcn Components
-import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from '@/components/ui/card';
+import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from '@/components/ui/form';
 import { Input } from '@/components/ui/input';
 import { Button } from '@/components/ui/button';
 import { Alert, AlertDescription } from '@/components/ui/alert';
-import { Separator } from '@/components/ui/separator';
-import { Eye, EyeOff, Headphones, Music, Shield, User, Lock, Sparkles, AlertCircle, CheckCircle2 } from 'lucide-react';
+import { Checkbox } from '@/components/ui/checkbox';
+import { Label } from '@/components/ui/label';
 
 // Custom Components
 import Loader from '../../components/common/Loader';
-import FloatingAudioWaves from '@/components/ui/FloatingAudioWaves';
 
 // Redux Actions
 import { login } from '../../actions/customerActions';
+
+// Import hero banner
+import herobanner from '../../assets/hero-banner.jpg';
 
 // Schema for form validation
 const loginSchema = z.object({
@@ -49,216 +52,205 @@ function Login() {
     },
   });
 
+  // Effect for loading saved username
   useEffect(() => {
     const savedUsername = localStorage.getItem('soundwave_username');
     if (savedUsername) {
       form.setValue('username', savedUsername);
       setRememberMe(true);
     }
+  }, [form]);
 
-    if (userInfo) navigate(redirect);
-  }, [navigate, userInfo, redirect, form]);
+  // Effect for handling successful login redirect
+  useEffect(() => {
+    // Only navigate when we have userInfo (successful login)
+    if (userInfo && userInfo.access) { // Check for access token
+      navigate(redirect);
+    }
+  }, [userInfo, navigate, redirect]);
 
-  const onSubmit = (data) => {
+  const onSubmit = async (data) => {
     if (rememberMe) {
       localStorage.setItem('soundwave_username', data.username);
     } else {
       localStorage.removeItem('soundwave_username');
     }
+    
     dispatch(login(data.username, data.password));
   };
 
-  const handleDemoLogin = () => {
-    form.setValue('username', 'demo_user');
-    form.setValue('password', 'demo123');
-    dispatch(login('demo_user', 'demo123'));
-  };
-
   return (
-    <div className="min-h-screen bg-white text-black px-4 flex items-center justify-center">
-      <div className="container max-w-6xl mx-auto py-12">
+    <div className="min-h-screen relative flex items-center justify-center">
+      {/* Background Image with Overlay */}
+      <div 
+        className="absolute inset-0 bg-cover bg-center bg-no-repeat"
+        style={{ backgroundImage: `url(${herobanner})` }}
+      >
+        <div className="absolute inset-0 bg-black/60 backdrop-blur-sm" />
+      </div>
 
-        <div className="flex flex-col lg:flex-row items-center justify-center gap-12">
+      {/* Header */}
+      <header className="absolute top-0 left-0 right-0 z-10 py-4 sm:py-6">
+        <div className="container mx-auto flex items-center justify-between px-4 sm:px-6">
+          <Link to="/" className="flex items-center gap-2">
+            <span className="text-xl sm:text-2xl font-black tracking-tight text-white">
+              soundwave
+            </span>
+            <span className="text-xl sm:text-2xl font-light text-white/80">audio</span>
+          </Link>
+          <Link
+            to="/"
+            className="flex items-center gap-2 text-xs sm:text-sm text-white/70 transition-colors hover:text-white"
+          >
+            <ArrowLeft className="h-3 w-3 sm:h-4 sm:w-4" />
+            <span className="hidden sm:inline">Back to Store</span>
+            <span className="sm:hidden">Back</span>
+          </Link>
+        </div>
+      </header>
 
-          {/* Left Branding Section */}
-          <div className="lg:w-1/2 space-y-10">
-            <div className="flex items-center gap-3">
-              <div className="p-3 bg-black text-white rounded-xl">
-                <Headphones className="h-7 w-7" />
-              </div>
-              <h1 className="text-4xl font-bold tracking-tight">
-                Sound Wave Audio
-              </h1>
-            </div>
-
-            <p className="text-gray-700 text-lg leading-relaxed">
-              Premium sound, clean design, engineered for audio lovers.  
-              Welcome to a system built for clarity, power, and perfection.
-            </p>
-
-            <div className="grid grid-cols-3 gap-4">
-              {[
-                { icon: Music, title: 'Premium Sound', desc: 'Studio-grade clarity' },
-                { icon: Shield, title: 'Secure', desc: 'Protected accounts' },
-                { icon: Sparkles, title: 'Innovative', desc: 'Next-gen tech' },
-              ].map((item, i) => (
-                <div key={i} className="border border-gray-200 p-4 rounded-xl text-center hover:shadow-sm transition">
-                  <item.icon className="h-6 w-6 mx-auto mb-1 text-black" />
-                  <div className="font-semibold">{item.title}</div>
-                  <div className="text-sm text-gray-600">{item.desc}</div>
-                </div>
-              ))}
-            </div>
-          </div>
-
-          {/* Right Login Card */}
-          <div className="lg:w-1/2 max-w-md">
-            <Card className="border-gray-200 shadow-sm">
-              <CardHeader>
-                <CardTitle className="text-xl font-bold">Welcome Back</CardTitle>
-                <CardDescription>Sign in to your Sound Wave Audio account</CardDescription>
+      {/* Main Content */}
+      <main className="relative z-10 w-full px-4 py-20 sm:py-24">
+        <div className="container mx-auto flex items-center justify-center">
+          <div className="w-full max-w-md">
+            {/* Card */}
+            <Card className="border-white/10 bg-black/40 backdrop-blur-xl shadow-2xl">
+              <CardHeader className="space-y-1 pb-6">
+                <CardTitle className="text-xl sm:text-2xl font-bold text-white text-center">
+                  Welcome Back
+                </CardTitle>
+                <p className="text-center text-sm text-white/60">
+                  Sign in to your account to continue
+                </p>
               </CardHeader>
 
               <CardContent className="space-y-6">
-                {/* Error */}
+                {/* Error Alert */}
                 {error && (
-                  <Alert variant="destructive">
+                  <Alert variant="destructive" className="bg-red-500/10 border-red-500/50 text-red-200">
                     <AlertCircle className="h-4 w-4" />
                     <AlertDescription>{error}</AlertDescription>
                   </Alert>
                 )}
 
-                {/* Success */}
-                {userInfo && !error && (
-                  <Alert>
-                    <CheckCircle2 className="h-4 w-4" />
-                    <AlertDescription>Login successful! Redirecting…</AlertDescription>
-                  </Alert>
-                )}
-
                 <Form {...form}>
-                  <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-5">
-
-                    {/* Username */}
+                  <form onSubmit={(e) => {
+                      e.preventDefault(); // Prevent default form submission
+                      form.handleSubmit(onSubmit)();
+                    }} className="space-y-5" autoComplete="on">
+                    {/* Username/Email Field */}
                     <FormField
                       control={form.control}
                       name="username"
                       render={({ field }) => (
                         <FormItem>
-                          <FormLabel className="text-black">Username or Email</FormLabel>
+                          <FormLabel className="text-white/90 text-sm">Email or Username</FormLabel>
                           <FormControl>
                             <div className="relative">
-                              <User className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-gray-500" />
+                              <Mail className="absolute left-3 top-1/2 h-4 w-4 sm:h-5 sm:w-5 -translate-y-1/2 text-white/40" />
                               <Input
-                                className="pl-10 border-gray-300 text-black placeholder:text-gray-400 bg-white"
-                                placeholder="Enter your username or email"
+                                placeholder="Enter your email or username"
+                                className="pl-10 sm:pl-11 h-11 sm:h-12 bg-white/5 border-white/10 text-white placeholder:text-white/30 focus:bg-white/10 focus:border-white/30 transition-all"
                                 {...field}
                               />
                             </div>
                           </FormControl>
-                          <FormMessage />
+                          <FormMessage className="text-red-300 text-xs" />
                         </FormItem>
                       )}
                     />
 
-                    {/* Password */}
+                    {/* Password Field */}
                     <FormField
                       control={form.control}
                       name="password"
                       render={({ field }) => (
                         <FormItem>
-                          <FormLabel className="text-black">Password</FormLabel>
+                          <div className="flex items-center justify-between mb-2">
+                            <FormLabel className="text-white/90 text-sm">Password</FormLabel>
+                            <Link
+                              to="/forgot-password"
+                              className="text-xs sm:text-sm text-white/60 hover:text-white transition-colors"
+                            >
+                              Forgot password?
+                            </Link>
+                          </div>
                           <FormControl>
                             <div className="relative">
-                              <Lock className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-gray-500" />
+                              <Lock className="absolute left-3 top-1/2 h-4 w-4 sm:h-5 sm:w-5 -translate-y-1/2 text-white/40" />
                               <Input
                                 type={showPassword ? 'text' : 'password'}
                                 placeholder="Enter your password"
-                                className="pl-10 pr-10 border-gray-300 text-black placeholder:text-gray-400 bg-white"
+                                className="pl-10 sm:pl-11 pr-10 sm:pr-11 h-11 sm:h-12 bg-white/5 border-white/10 text-white placeholder:text-white/30 focus:bg-white/10 focus:border-white/30 transition-all"
                                 {...field}
                               />
-                              <Button
+                              <button
                                 type="button"
-                                variant="ghost"
-                                size="sm"
-                                className="absolute right-2 top-1/2 -translate-y-1/2 h-6 w-6 p-0 text-gray-600"
                                 onClick={() => setShowPassword(!showPassword)}
+                                className="absolute right-3 top-1/2 -translate-y-1/2 text-white/40 hover:text-white/70 transition-colors"
                               >
-                                {showPassword ? <EyeOff /> : <Eye />}
-                              </Button>
+                                {showPassword ? (
+                                  <EyeOff className="h-4 w-4 sm:h-5 sm:w-5" />
+                                ) : (
+                                  <Eye className="h-4 w-4 sm:h-5 sm:w-5" />
+                                )}
+                              </button>
                             </div>
                           </FormControl>
-                          <FormMessage />
+                          <FormMessage className="text-red-300 text-xs" />
                         </FormItem>
                       )}
                     />
 
-                    {/* Remember / Forgot */}
-                    <div className="flex items-center justify-between">
-                      <div className="flex items-center gap-2">
-                        <input
-                          type="checkbox"
-                          checked={rememberMe}
-                          onChange={(e) => setRememberMe(e.target.checked)}
-                          className="rounded border-gray-400"
-                        />
-                        <span className="text-sm text-gray-700">Remember me</span>
-                      </div>
-
-                      <Link to="/forgot-password" className="text-sm text-gray-700 underline">
-                        Forgot password?
-                      </Link>
+                    {/* Remember Me */}
+                    <div className="flex items-center gap-2">
+                      <Checkbox
+                        id="remember"
+                        checked={rememberMe}
+                        onCheckedChange={(checked) => setRememberMe(checked)}
+                        className="border-white/30 data-[state=checked]:bg-white data-[state=checked]:text-black"
+                      />
+                      <Label
+                        htmlFor="remember"
+                        className="text-xs sm:text-sm text-white/70 cursor-pointer font-normal"
+                      >
+                        Remember me for 30 days
+                      </Label>
                     </div>
 
-                    {/* Submit */}
+                    {/* Submit Button */}
                     <Button
                       type="submit"
                       disabled={loading}
-                      className="w-full bg-black text-white py-6 hover:bg-gray-900"
+                      className="w-full h-11 sm:h-12 bg-white text-black hover:bg-white/90 font-semibold transition-all disabled:opacity-50 disabled:cursor-not-allowed"
                     >
                       {loading ? (
-                        <>
-                          <Loader className="mr-2 h-4 w-4" />
-                          Signing in...
-                        </>
+                        <div className="flex items-center justify-center gap-2">
+                          <Loader className="h-4 w-4 animate-spin" />
+                          <span>Signing in...</span>
+                        </div>
                       ) : (
-                        "Sign In"
+                        'Sign In'
                       )}
                     </Button>
                   </form>
                 </Form>
 
-                <div className="relative">
-                  <div className="absolute inset-0 flex items-center">
-                    <Separator />
-                  </div>
-                  <div className="relative flex justify-center text-xs uppercase">
-                    <span className="bg-white px-3 text-gray-500">Or continue with</span>
-                  </div>
-                </div>
-
-                <Button
-                  type="button"
-                  variant="outline"
-                  onClick={handleDemoLogin}
-                  className="w-full border-gray-300 text-black hover:bg-gray-100"
-                >
-                  Google under construction
-                </Button>
-              </CardContent>
-
-              <CardFooter className="flex flex-col space-y-4">
-                <p className="text-center text-gray-700">
-                  Don't have an account?{" "}
-                  <Link to={redirect ? `/register?redirect=${redirect}` : '/register'} className="underline">
-                    Create one now
+                {/* Sign Up Link */}
+                <p className="text-center text-xs sm:text-sm text-white/60 pt-2">
+                  Don't have an account?{' '}
+                  <Link
+                    to={redirect ? `/register?redirect=${redirect}` : '/register'}
+                    className="font-semibold text-white hover:text-white/80 transition-colors"
+                  >
+                    Create account
                   </Link>
                 </p>
-              </CardFooter>
+              </CardContent>
             </Card>
           </div>
         </div>
-      </div>
+      </main>
     </div>
   );
 }

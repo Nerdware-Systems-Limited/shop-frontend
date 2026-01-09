@@ -42,6 +42,18 @@ import {
   LOYALTY_POINTS_ADD_REQUEST,
   LOYALTY_POINTS_ADD_SUCCESS,
   LOYALTY_POINTS_ADD_FAIL,
+  PASSWORD_RESET_REQUEST,
+  PASSWORD_RESET_SUCCESS,
+  PASSWORD_RESET_FAIL,
+  PASSWORD_RESET_RESET,
+  PASSWORD_RESET_VERIFY_REQUEST,
+  PASSWORD_RESET_VERIFY_SUCCESS,
+  PASSWORD_RESET_VERIFY_FAIL,
+  PASSWORD_RESET_VERIFY_RESET,
+  PASSWORD_RESET_CONFIRM_REQUEST,
+  PASSWORD_RESET_CONFIRM_SUCCESS,
+  PASSWORD_RESET_CONFIRM_FAIL,
+  PASSWORD_RESET_CONFIRM_RESET,
 } from '../constants/customerConstants';
 
 // User login reducer
@@ -223,6 +235,61 @@ export const loyaltyPointsAddReducer = (state = {}, action) => {
       return { loading: false, success: true, data: action.payload };
     case LOYALTY_POINTS_ADD_FAIL:
       return { loading: false, error: action.payload };
+    default:
+      return state;
+  }
+};
+
+// Password reset request reducer
+export const passwordResetReducer = (state = {}, action) => {
+  switch (action.type) {
+    case PASSWORD_RESET_REQUEST:
+      return { loading: true };
+    case PASSWORD_RESET_SUCCESS:
+      return { loading: false, success: true, message: action.payload.message };
+    case PASSWORD_RESET_FAIL:
+      return { loading: false, error: action.payload };
+    case PASSWORD_RESET_RESET:
+      return {};
+    default:
+      return state;
+  }
+};
+
+// Password reset code verify reducer
+export const passwordResetVerifyReducer = (state = {}, action) => {
+  switch (action.type) {
+    case PASSWORD_RESET_VERIFY_REQUEST:
+      return { loading: true };
+    case PASSWORD_RESET_VERIFY_SUCCESS:
+      return { 
+        loading: false, 
+        success: true, 
+        uid: action.payload.uid,
+        token: action.payload.token,
+        code: action.payload.code,
+        message: action.payload.message 
+      };
+    case PASSWORD_RESET_VERIFY_FAIL:
+      return { loading: false, error: action.payload };
+    case PASSWORD_RESET_VERIFY_RESET:
+      return {};
+    default:
+      return state;
+  }
+};
+
+// Password reset confirm reducer
+export const passwordResetConfirmReducer = (state = {}, action) => {
+  switch (action.type) {
+    case PASSWORD_RESET_CONFIRM_REQUEST:
+      return { loading: true };
+    case PASSWORD_RESET_CONFIRM_SUCCESS:
+      return { loading: false, success: true, message: action.payload.message };
+    case PASSWORD_RESET_CONFIRM_FAIL:
+      return { loading: false, error: action.payload };
+    case PASSWORD_RESET_CONFIRM_RESET:
+      return {};
     default:
       return state;
   }

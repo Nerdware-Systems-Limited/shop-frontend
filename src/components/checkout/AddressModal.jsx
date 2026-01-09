@@ -16,7 +16,7 @@ import {
   SelectContent,
 } from "@/components/ui/select";
 import { Button } from "@/components/ui/button";
-import { X, Check, Loader2 } from "lucide-react";
+import { X, Check, Loader2, MapPin } from "lucide-react";
 import { createAddress, updateAddress, resetCreateAddress, resetUpdateAddress } from "../../actions/customerActions";
 
 // Import Kenya counties data
@@ -207,244 +207,256 @@ export function AddressModal({
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
-      <DialogContent className="bg-white border-2 border-black p-0 max-w-2xl max-h-[90vh] overflow-y-auto">
-        {/* Header */}
-        <DialogHeader className="border-b-2 border-black p-6 pb-5 sticky top-0 bg-white z-10">
-          <div className="flex items-center justify-between">
-            <DialogTitle className="text-sm uppercase tracking-[0.3em] font-medium">
-              {editAddress ? "Edit" : "Add"} {formData.address_type} Address
-            </DialogTitle>
+      <DialogContent className="bg-white border-2 border-black p-0 w-[calc(100vw-2rem)] max-w-2xl h-[calc(100vh-2rem)] max-h-[42rem] flex flex-col overflow-hidden sm:w-full">
+        {/* Header - Fixed */}
+        <DialogHeader className="border-b-2 border-black px-4 sm:px-6 py-4 flex-shrink-0">
+          <div className="flex items-center justify-between gap-4">
+            <div className="flex items-center gap-3 min-w-0">
+              <div className="w-8 h-8 sm:w-10 sm:h-10 border-2 border-black flex items-center justify-center flex-shrink-0">
+                <MapPin className="w-4 h-4 sm:w-5 sm:h-5" />
+              </div>
+              <DialogTitle className="text-xs sm:text-sm uppercase tracking-[0.2em] sm:tracking-[0.3em] font-medium truncate">
+                {editAddress ? "Edit" : "Add"} {formData.address_type}
+              </DialogTitle>
+            </div>
             <button
               onClick={handleClose}
-              className="hover:bg-gray-100 p-1 rounded transition-colors"
+              className="hover:bg-gray-100 p-1.5 sm:p-2 border-2 border-black transition-all hover:scale-105 flex-shrink-0"
               disabled={loading}
             >
-              <X className="w-4 h-4" />
+              <X className="w-3.5 h-3.5 sm:w-4 sm:h-4" />
             </button>
           </div>
         </DialogHeader>
 
-        {/* Form */}
-        <div className="p-6 space-y-5">
-          {/* Error Display */}
-          {error && (
-            <div className="p-3 border-2 border-red-500 bg-red-50 text-red-700 text-xs">
-              {typeof error === 'string' ? error : JSON.stringify(error)}
+        {/* Form - Scrollable */}
+        <div className="flex-1 overflow-y-auto px-4 sm:px-6 py-4 sm:py-6">
+          <div className="space-y-4 sm:space-y-5">
+            {/* Error Display */}
+            {error && (
+              <div className="p-3 border-2 border-red-500 bg-red-50 text-red-700 text-xs animate-in fade-in slide-in-from-top-2 duration-300">
+                {typeof error === 'string' ? error : JSON.stringify(error)}
+              </div>
+            )}
+
+            {/* Address Type */}
+            <div className="space-y-2">
+              <Label className="text-[9px] sm:text-[10px] uppercase tracking-[0.15em] sm:tracking-[0.2em] font-medium text-gray-700">
+                Address Type
+              </Label>
+              <Select 
+                value={formData.address_type} 
+                onValueChange={(value) => handleInputChange('address_type', value)}
+                disabled={loading}
+              >
+                <SelectTrigger className="h-10 sm:h-11 border-black border-2 bg-white text-sm focus:ring-2 focus:ring-black focus:ring-offset-2 transition-all">
+                  <SelectValue />
+                </SelectTrigger>
+                <SelectContent className="border-2 border-black max-h-60">
+                  <SelectItem value="shipping" className="text-sm py-2.5 focus:bg-black focus:text-white cursor-pointer">
+                    Shipping
+                  </SelectItem>
+                  <SelectItem value="billing" className="text-sm py-2.5 focus:bg-black focus:text-white cursor-pointer">
+                    Billing
+                  </SelectItem>
+                </SelectContent>
+              </Select>
             </div>
-          )}
 
-          {/* Address Type */}
-          <div className="space-y-2">
-            <Label className="text-[10px] uppercase tracking-[0.2em] font-medium">
-              Address Type
-            </Label>
-            <Select 
-              value={formData.address_type} 
-              onValueChange={(value) => handleInputChange('address_type', value)}
-              disabled={loading}
-            >
-              <SelectTrigger className="h-11 border-black border-2 bg-white text-sm focus:ring-0 focus:ring-offset-0">
-                <SelectValue />
-              </SelectTrigger>
-              <SelectContent className="border-2 border-black">
-                <SelectItem value="shipping" className="text-sm py-2.5 focus:bg-black focus:text-white">
-                  Shipping
-                </SelectItem>
-                <SelectItem value="billing" className="text-sm py-2.5 focus:bg-black focus:text-white">
-                  Billing
-                </SelectItem>
-              </SelectContent>
-            </Select>
-          </div>
+            {/* Street Address */}
+            <div className="space-y-2">
+              <Label className="text-[9px] sm:text-[10px] uppercase tracking-[0.15em] sm:tracking-[0.2em] font-medium text-gray-700">
+                Street Address <span className="text-red-500">*</span>
+              </Label>
+              <Input
+                type="text"
+                placeholder="123 Main Street"
+                className="h-10 sm:h-11 border-black border-2 bg-white text-sm focus-visible:ring-2 focus-visible:ring-black focus-visible:ring-offset-2 transition-all placeholder:text-gray-400"
+                value={formData.street_address}
+                onChange={(e) => handleInputChange('street_address', e.target.value)}
+                disabled={loading}
+              />
+            </div>
 
-          {/* Street Address */}
-          <div className="space-y-2">
-            <Label className="text-[10px] uppercase tracking-[0.2em] font-medium">
-              Street Address *
-            </Label>
-            <Input
-              type="text"
-              placeholder="123 Main Street"
-              className="h-11 border-black border-2 bg-white text-sm focus-visible:ring-0 focus-visible:ring-offset-0"
-              value={formData.street_address}
-              onChange={(e) => handleInputChange('street_address', e.target.value)}
-              disabled={loading}
-            />
-          </div>
+            {/* Apartment/Unit */}
+            <div className="space-y-2">
+              <Label className="text-[9px] sm:text-[10px] uppercase tracking-[0.15em] sm:tracking-[0.2em] font-medium text-gray-700">
+                Apartment/Unit
+              </Label>
+              <Input
+                type="text"
+                placeholder="Apt 4B"
+                className="h-10 sm:h-11 border-black border-2 bg-white text-sm focus-visible:ring-2 focus-visible:ring-black focus-visible:ring-offset-2 transition-all placeholder:text-gray-400"
+                value={formData.apartment}
+                onChange={(e) => handleInputChange('apartment', e.target.value)}
+                disabled={loading}
+              />
+            </div>
 
-          {/* Apartment/Unit */}
-          <div className="space-y-2">
-            <Label className="text-[10px] uppercase tracking-[0.2em] font-medium">
-              Apartment/Unit (Optional)
-            </Label>
-            <Input
-              type="text"
-              placeholder="Apt 4B"
-              className="h-11 border-black border-2 bg-white text-sm focus-visible:ring-0 focus-visible:ring-offset-0"
-              value={formData.apartment}
-              onChange={(e) => handleInputChange('apartment', e.target.value)}
-              disabled={loading}
-            />
-          </div>
-
-          {/* County */}
-          <div className="space-y-2">
-            <Label className="text-[10px] uppercase tracking-[0.2em] font-medium">
-              County *
-            </Label>
-            <Select 
-              value={formData.county} 
-              onValueChange={handleCountyChange}
-              disabled={loading}
-            >
-              <SelectTrigger className="h-11 border-black border-2 bg-white text-sm focus:ring-0 focus:ring-offset-0">
-                <SelectValue placeholder="Select county" />
-              </SelectTrigger>
-              <SelectContent className="border-2 border-black">
-                {counties.map((county) => (
-                  <SelectItem 
-                    key={county.id} 
-                    value={county.name} 
-                    className="text-sm py-2.5 focus:bg-black focus:text-white"
-                  >
-                    {county.name}
-                  </SelectItem>
-                ))}
-              </SelectContent>
-            </Select>
-          </div>
-
-          {/* Subcounty */}
-          <div className="space-y-2">
-            <Label className="text-[10px] uppercase tracking-[0.2em] font-medium">
-              Subcounty (Optional)
-            </Label>
-            <Select
-              value={formData.subcounty}
-              onValueChange={handleSubcountyChange}
-              disabled={!formData.county || loading}
-            >
-              <SelectTrigger 
-                className={`h-11 border-black border-2 bg-white text-sm focus:ring-0 focus:ring-offset-0 ${
-                  !formData.county ? 'opacity-40 cursor-not-allowed' : ''
-                }`}
+            {/* County */}
+            <div className="space-y-2">
+              <Label className="text-[9px] sm:text-[10px] uppercase tracking-[0.15em] sm:tracking-[0.2em] font-medium text-gray-700">
+                County <span className="text-red-500">*</span>
+              </Label>
+              <Select 
+                value={formData.county} 
+                onValueChange={handleCountyChange}
+                disabled={loading}
               >
-                <SelectValue placeholder={formData.county ? "Select subcounty" : "Select county first"} />
-              </SelectTrigger>
-              <SelectContent className="border-2 border-black">
-                {subcounties.map((subcounty, idx) => (
-                  <SelectItem 
-                    key={`${subcounty.subcounty_id}-${idx}`} 
-                    value={subcounty.constituency_name} 
-                    className="text-sm py-2.5 focus:bg-black focus:text-white capitalize"
-                  >
-                    {subcounty.constituency_name}
-                  </SelectItem>
-                ))}
-              </SelectContent>
-            </Select>
-          </div>
+                <SelectTrigger className="h-10 sm:h-11 border-black border-2 bg-white text-sm focus:ring-2 focus:ring-black focus:ring-offset-2 transition-all">
+                  <SelectValue placeholder="Select county" />
+                </SelectTrigger>
+                <SelectContent className="border-2 border-black max-h-[16rem] sm:max-h-72 overflow-y-auto">
+                  {counties.map((county) => (
+                    <SelectItem 
+                      key={county.id} 
+                      value={county.name} 
+                      className="text-sm py-2.5 focus:bg-black focus:text-white cursor-pointer"
+                    >
+                      {county.name}
+                    </SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
+            </div>
 
-          {/* Ward */}
-          <div className="space-y-2">
-            <Label className="text-[10px] uppercase tracking-[0.2em] font-medium">
-              Ward (Optional)
-            </Label>
-            <Select
-              value={formData.ward}
-              onValueChange={handleWardChange}
-              disabled={!formData.subcounty || loading}
-            >
-              <SelectTrigger 
-                className={`h-11 border-black border-2 bg-white text-sm focus:ring-0 focus:ring-offset-0 ${
-                  !formData.subcounty ? 'opacity-40 cursor-not-allowed' : ''
-                }`}
+            {/* Subcounty */}
+            <div className="space-y-2">
+              <Label className="text-[9px] sm:text-[10px] uppercase tracking-[0.15em] sm:tracking-[0.2em] font-medium text-gray-700">
+                Subcounty
+              </Label>
+              <Select
+                value={formData.subcounty}
+                onValueChange={handleSubcountyChange}
+                disabled={!formData.county || loading}
               >
-                <SelectValue placeholder={formData.subcounty ? "Select ward" : "Select subcounty first"} />
-              </SelectTrigger>
-              <SelectContent className="border-2 border-black">
-                {wards.map((ward, idx) => (
-                  <SelectItem 
-                    key={`${ward.station_id}-${idx}`} 
-                    value={ward.ward_name} 
-                    className="text-sm py-2.5 focus:bg-black focus:text-white capitalize"
-                  >
-                    {ward.ward_name}
-                  </SelectItem>
-                ))}
-              </SelectContent>
-            </Select>
-          </div>
+                <SelectTrigger 
+                  className={`h-10 sm:h-11 border-black border-2 bg-white text-sm focus:ring-2 focus:ring-black focus:ring-offset-2 transition-all ${
+                    !formData.county ? 'opacity-40 cursor-not-allowed' : ''
+                  }`}
+                >
+                  <SelectValue placeholder={formData.county ? "Select subcounty" : "Select county first"} />
+                </SelectTrigger>
+                <SelectContent className="border-2 border-black max-h-[16rem] sm:max-h-72 overflow-y-auto">
+                  {subcounties.map((subcounty, idx) => (
+                    <SelectItem 
+                      key={`${subcounty.subcounty_id}-${idx}`} 
+                      value={subcounty.constituency_name} 
+                      className="text-sm py-2.5 focus:bg-black focus:text-white capitalize cursor-pointer"
+                    >
+                      {subcounty.constituency_name}
+                    </SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
+            </div>
 
-          {/* City/Town */}
-          <div className="space-y-2">
-            <Label className="text-[10px] uppercase tracking-[0.2em] font-medium">
-              City/Town *
-            </Label>
-            <Input
-              type="text"
-              placeholder="Nairobi"
-              className="h-11 border-black border-2 bg-white text-sm focus-visible:ring-0 focus-visible:ring-offset-0"
-              value={formData.city}
-              onChange={(e) => handleInputChange('city', e.target.value)}
-              disabled={loading}
-            />
-          </div>
+            {/* Ward */}
+            <div className="space-y-2">
+              <Label className="text-[9px] sm:text-[10px] uppercase tracking-[0.15em] sm:tracking-[0.2em] font-medium text-gray-700">
+                Ward
+              </Label>
+              <Select
+                value={formData.ward}
+                onValueChange={handleWardChange}
+                disabled={!formData.subcounty || loading}
+              >
+                <SelectTrigger 
+                  className={`h-10 sm:h-11 border-black border-2 bg-white text-sm focus:ring-2 focus:ring-black focus:ring-offset-2 transition-all ${
+                    !formData.subcounty ? 'opacity-40 cursor-not-allowed' : ''
+                  }`}
+                >
+                  <SelectValue placeholder={formData.subcounty ? "Select ward" : "Select subcounty first"} />
+                </SelectTrigger>
+                <SelectContent className="border-2 border-black max-h-[16rem] sm:max-h-72 overflow-y-auto">
+                  {wards.map((ward, idx) => (
+                    <SelectItem 
+                      key={`${ward.station_id}-${idx}`} 
+                      value={ward.ward_name} 
+                      className="text-sm py-2.5 focus:bg-black focus:text-white capitalize cursor-pointer"
+                    >
+                      {ward.ward_name}
+                    </SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
+            </div>
 
-          {/* Postal Code */}
-          <div className="space-y-2">
-            <Label className="text-[10px] uppercase tracking-[0.2em] font-medium">
-              Postal Code *
-            </Label>
-            <Input
-              type="text"
-              placeholder="00100"
-              className="h-11 border-black border-2 bg-white text-sm focus-visible:ring-0 focus-visible:ring-offset-0"
-              value={formData.postal_code}
-              onChange={(e) => handleInputChange('postal_code', e.target.value)}
-              disabled={loading}
-            />
-          </div>
+            {/* City/Town */}
+            <div className="space-y-2">
+              <Label className="text-[9px] sm:text-[10px] uppercase tracking-[0.15em] sm:tracking-[0.2em] font-medium text-gray-700">
+                City/Town <span className="text-red-500">*</span>
+              </Label>
+              <Input
+                type="text"
+                placeholder="Nairobi"
+                className="h-10 sm:h-11 border-black border-2 bg-white text-sm focus-visible:ring-2 focus-visible:ring-black focus-visible:ring-offset-2 transition-all placeholder:text-gray-400"
+                value={formData.city}
+                onChange={(e) => handleInputChange('city', e.target.value)}
+                disabled={loading}
+              />
+            </div>
 
-          {/* Country */}
-          <div className="space-y-2">
-            <Label className="text-[10px] uppercase tracking-[0.2em] font-medium">
-              Country
-            </Label>
-            <Input
-              type="text"
-              placeholder="Kenya"
-              className="h-11 border-black border-2 bg-gray-100 text-sm focus-visible:ring-0 focus-visible:ring-offset-0"
-              value={formData.country}
-              disabled
-            />
-          </div>
+            {/* Postal Code */}
+            <div className="space-y-2">
+              <Label className="text-[9px] sm:text-[10px] uppercase tracking-[0.15em] sm:tracking-[0.2em] font-medium text-gray-700">
+                Postal Code <span className="text-red-500">*</span>
+              </Label>
+              <Input
+                type="text"
+                placeholder="00100"
+                className="h-10 sm:h-11 border-black border-2 bg-white text-sm focus-visible:ring-2 focus-visible:ring-black focus-visible:ring-offset-2 transition-all placeholder:text-gray-400"
+                value={formData.postal_code}
+                onChange={(e) => handleInputChange('postal_code', e.target.value)}
+                disabled={loading}
+              />
+            </div>
 
-          {/* Set as Default */}
-          <div className="flex items-center space-x-3 pt-2">
-            <input
-              type="checkbox"
-              id="is_default"
-              checked={formData.is_default}
-              onChange={(e) => handleInputChange('is_default', e.target.checked)}
-              className="w-4 h-4 border-2 border-black focus:ring-0 focus:ring-offset-0"
-              disabled={loading}
-            />
-            <Label 
-              htmlFor="is_default" 
-              className="text-[10px] uppercase tracking-[0.2em] font-medium cursor-pointer"
-            >
-              Set as default {formData.address_type} address
-            </Label>
-          </div>
+            {/* Country */}
+            <div className="space-y-2">
+              <Label className="text-[9px] sm:text-[10px] uppercase tracking-[0.15em] sm:tracking-[0.2em] font-medium text-gray-700">
+                Country
+              </Label>
+              <Input
+                type="text"
+                placeholder="Kenya"
+                className="h-10 sm:h-11 border-black border-2 bg-gray-50 text-sm focus-visible:ring-0 text-gray-500"
+                value={formData.country}
+                disabled
+              />
+            </div>
 
-          {/* Actions */}
-          <div className="flex gap-3 pt-4">
+            {/* Set as Default */}
+            <div className="flex items-center space-x-3 pt-2 pb-2">
+              <div className="relative">
+                <input
+                  type="checkbox"
+                  id="is_default"
+                  checked={formData.is_default}
+                  onChange={(e) => handleInputChange('is_default', e.target.checked)}
+                  className="peer w-5 h-5 border-2 border-black focus:ring-2 focus:ring-black focus:ring-offset-2 checked:bg-black checked:border-black transition-all cursor-pointer"
+                  disabled={loading}
+                />
+                <Check className="w-3 h-3 absolute top-1 left-1 text-white pointer-events-none opacity-0 peer-checked:opacity-100 transition-opacity" />
+              </div>
+              <Label 
+                htmlFor="is_default" 
+                className="text-[9px] sm:text-[10px] uppercase tracking-[0.15em] sm:tracking-[0.2em] font-medium cursor-pointer select-none"
+              >
+                Set as default {formData.address_type} address
+              </Label>
+            </div>
+          </div>
+        </div>
+
+        {/* Actions - Fixed */}
+        <div className="border-t-2 border-black px-4 sm:px-6 py-4 flex-shrink-0 bg-white">
+          <div className="flex gap-2 sm:gap-3">
             <Button
               type="button"
               variant="outline"
               onClick={handleClose}
-              className="flex-1 h-11 border-2 border-black bg-white hover:bg-gray-50 text-[10px] uppercase tracking-[0.2em] font-medium"
+              className="flex-1 h-10 sm:h-11 border-2 border-black bg-white hover:bg-gray-50 text-[9px] sm:text-[10px] uppercase tracking-[0.15em] sm:tracking-[0.2em] font-medium transition-all hover:scale-[1.02]"
               disabled={loading}
             >
               Cancel
@@ -452,18 +464,18 @@ export function AddressModal({
             <Button
               type="button"
               onClick={handleSubmit}
-              className="flex-1 h-11 bg-black text-white hover:bg-gray-900 text-[10px] uppercase tracking-[0.2em] font-medium disabled:opacity-50"
+              className="flex-1 h-10 sm:h-11 bg-black text-white hover:bg-gray-800 text-[9px] sm:text-[10px] uppercase tracking-[0.15em] sm:tracking-[0.2em] font-medium disabled:opacity-50 transition-all hover:scale-[1.02] disabled:hover:scale-100"
               disabled={loading || !formData.street_address || !formData.county || !formData.city || !formData.postal_code}
             >
               {loading ? (
                 <>
-                  <Loader2 className="w-4 h-4 mr-2 animate-spin" />
+                  <Loader2 className="w-3.5 h-3.5 sm:w-4 sm:h-4 mr-2 animate-spin" />
                   Saving...
                 </>
               ) : (
                 <>
-                  <Check className="w-4 h-4 mr-2" />
-                  {editAddress ? 'Update' : 'Save'} Address
+                  <Check className="w-3.5 h-3.5 sm:w-4 sm:h-4 mr-2" />
+                  {editAddress ? 'Update' : 'Save'}
                 </>
               )}
             </Button>

@@ -32,6 +32,9 @@ import {
   addressDeleteReducer,
   addressSetDefaultReducer,
   loyaltyPointsAddReducer,
+  passwordResetReducer,
+  passwordResetVerifyReducer,
+  passwordResetConfirmReducer,
 } from './reducers/customerReducers';
 import {
   orderCreateReducer,
@@ -150,6 +153,10 @@ const reducer = combineReducers({
   addressDelete: addressDeleteReducer,
   addressSetDefault: addressSetDefaultReducer,
   loyaltyPointsAdd: loyaltyPointsAddReducer,
+  // Password reset reducers
+  passwordReset: passwordResetReducer,
+  passwordResetVerify: passwordResetVerifyReducer,
+  passwordResetConfirm: passwordResetConfirmReducer,
 
   // Order reducers
   orderCreate: orderCreateReducer,
@@ -260,7 +267,9 @@ const initialState = {
       shippingAddress: shippingAddressFromStorage,
       paymentMethod: paymentMethodFromStorage,},
   userLogin: { 
-    userInfo: userInfoFromStorage },
+    userInfo: userInfoFromStorage ,
+    loading: false,
+    error: null},
 }
 
 

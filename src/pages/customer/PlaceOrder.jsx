@@ -30,7 +30,7 @@ import {
   AlertCircle
 } from 'lucide-react';
 
-function PlaceOrder({ setCompleted }) {
+function PlaceOrder({ setCompleted, completed }) {
   const dispatch = useDispatch();
   const navigate = useNavigate();
   
@@ -169,11 +169,6 @@ function PlaceOrder({ setCompleted }) {
   // Handle success order creation
   useEffect(() => {
     if (success && order) {
-      setCompleted({
-        shipping: true,
-        payment: true,
-        order: true,
-      });
       
       // Clear cart
       localStorage.removeItem('cartItems');
@@ -188,7 +183,7 @@ function PlaceOrder({ setCompleted }) {
         dispatch(resetOrderCreate());
       }, 3000);
     }
-  }, [success, order, navigate, dispatch, setCompleted]);
+  }, [success, order, navigate, dispatch]);
 
   const handleShippingChange = useCallback((method) => {
     setSelectedShipping(method);
@@ -197,6 +192,15 @@ function PlaceOrder({ setCompleted }) {
   const placeOrder = async () => {
     if (!cart.cartItems?.length || !cart.shippingAddress || !cart.paymentMethod.method) {
       return;
+    }
+
+    if (typeof setCompleted === 'function') {
+      setCompleted((prev) => ({
+        ...prev,
+        0: true, // shipping
+        1: true, // payment  
+        2: true  // place order
+      }));
     }
     
     setLoading(true);
@@ -282,7 +286,7 @@ function PlaceOrder({ setCompleted }) {
       <div className="max-w-7xl mx-auto">
         {/* Checkout Steps */}
         <div className="mb-8">
-          <CheckoutSteps currentStep={3} completedSteps={['cart', 'shipping', 'payment']} />
+          <CheckoutSteps step_active={2} completed={completed || {}} />
         </div>
 
         {/* Shipping Methods Error Alert */}

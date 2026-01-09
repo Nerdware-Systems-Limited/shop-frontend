@@ -37,6 +37,12 @@ function Shipping({ setCompleted, completed }) {
   const addressList = useSelector((state) => state.addressList);
   const { loading: loadingAddresses, addresses, error: addressesError } = addressList;
 
+  useEffect(() => {
+    if (shippingAddress && shippingAddress.id) {
+      setSelectedAddressId(shippingAddress.id);
+    }
+  }, [shippingAddress]);
+
   const handleAddAddress = () => {
     setEditingAddress(null);
     setModalOpen(true);
@@ -61,6 +67,8 @@ function Shipping({ setCompleted, completed }) {
     setSelectedAddressId(address.id);
     dispatch(saveShippingAddress(address));
   };
+
+  // console.log('AddressModal props:', { open, onSave, editAddress, mode });
 
   const handleContinue = () => {
     if (!selectedAddressId) {
@@ -89,7 +97,7 @@ function Shipping({ setCompleted, completed }) {
 
       {/* Checkout Steps */}
       <div className="border-b border-black/10">
-        <CheckoutSteps step_active="0" completed={completed || {}} />
+        <CheckoutSteps step_active={0} completed={completed || {}} />
       </div>
 
       {/* Main Content */}

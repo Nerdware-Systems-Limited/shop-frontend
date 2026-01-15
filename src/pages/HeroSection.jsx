@@ -18,15 +18,8 @@ const slides = [
     title: "Feel Every Beat",
     subtitle: "Premium Speakers",
     description: "Crystal clear audio that transforms your drive",
-    cta: "Explore Speakers",
+    cta: "Explore",
     image: heroBanner2,
-  },
-  {
-    title: "Wireless Freedom",
-    subtitle: "Headphones & Earbuds",
-    description: "Immersive sound wherever you go",
-    cta: "Shop Audio",
-    image: heroBanner3,
   },
   {
     title: "Power Your Sound",

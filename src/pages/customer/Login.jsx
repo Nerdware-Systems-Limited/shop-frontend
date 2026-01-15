@@ -80,7 +80,7 @@ function Login() {
   };
 
   return (
-    <div className="min-h-screen relative flex items-center justify-center">
+    <div className="max-h-screen relative flex items-center justify-center">
       {/* Background Image with Overlay */}
       <div 
         className="absolute inset-0 bg-cover bg-center bg-no-repeat"

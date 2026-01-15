@@ -139,9 +139,10 @@ function PlaceOrder({ setCompleted, completed }) {
   }, [normalizedMethods, hasShippingMethods, selectedShipping]);
 
   // Calculate shipping quote when shipping method changes
+  console.log("SSup Bloof", selectedShipping, cart.shippingAddress, cart.cartItems?.length);
   useEffect(() => {
     if (!selectedShipping || !cart.shippingAddress || !cart.cartItems?.length) return;
-    console.log(cart.cartItems);
+    console.log("SSup Bloof", selectedShipping);
 
     const calculateShipping = async () => {
       try {

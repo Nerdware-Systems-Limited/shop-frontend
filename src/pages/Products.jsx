@@ -4,16 +4,19 @@ import { useSearchParams } from 'react-router-dom';
 import { listProducts, setFilters, clearFilters } from '../actions/productActions';
 import ProductGrid from '../components/products/ProductGrid';
 import FilterSidebar from '../components/products/FilterSidebar';
-import { SlidersHorizontal, X } from 'lucide-react';
+import { SlidersHorizontal, ChevronLeft, ChevronRight } from 'lucide-react';
 
 const Products = () => {
   const dispatch = useDispatch();
   const [searchParams, setSearchParams] = useSearchParams();
-  const { products, loading, error } = useSelector((state) => state.productList);
+  const { products, loading, error, count, next, previous } = useSelector((state) => state.productList);
   const filters = useSelector((state) => state.filters);
 
   const [mobileFilterOpen, setMobileFilterOpen] = useState(false);
   const [sortBy, setSortBy] = useState('');
+  const [currentPage, setCurrentPage] = useState(1);
+
+  console.log("Product List", products, count, next, previous);
 
   useEffect(() => {
     const params = {
@@ -32,16 +35,55 @@ const Products = () => {
 
   const handleFilterChange = (newFilters) => {
     dispatch(setFilters(newFilters));
+    setCurrentPage(1);
   };
 
   const handleClearFilters = () => {
     dispatch(clearFilters());
     setSearchParams({});
     setSortBy('');
+    setCurrentPage(1);
   };
 
   const handleSortChange = (value) => {
     setSortBy(value);
+    setCurrentPage(1);
+  };
+
+  const handlePageChange = async (url) => {
+    if (!url) return;
+    
+    try {
+      // Extract cursor from the URL
+      const urlObj = new URL(url);
+      const cursor = urlObj.searchParams.get('cursor');
+      
+      // Determine if next or previous
+      const isNext = url === next;
+      
+      // Update page number for display
+      setCurrentPage(prev => isNext ? prev + 1 : prev - 1);
+      
+      // Build params with cursor
+      const params = {
+        category: searchParams.get('category') || filters.category,
+        brand: searchParams.get('brand') || filters.brand,
+        min_price: filters.minPrice || 0,
+        max_price: filters.maxPrice || 10000,
+        in_stock: filters.inStock,
+        on_sale: filters.onSale,
+        ordering: sortBy,
+        search: searchParams.get('search') || '',
+        cursor: cursor,
+      };
+
+      dispatch(listProducts(params));
+      
+      // Scroll to top
+      window.scrollTo({ top: 0, behavior: 'smooth' });
+    } catch (err) {
+      console.error('Pagination error:', err);
+    }
   };
 
   const sortOptions = [
@@ -63,7 +105,7 @@ const Products = () => {
                 Products
               </h1>
               <p className="text-xs text-gray-600">
-                {products?.length || 0} {products?.length === 1 ? 'item' : 'items'}
+                {products.length || 0} total {products.length === 1 ? 'item' : 'items'}
               </p>
             </div>
 
@@ -129,7 +171,56 @@ const Products = () => {
 
           {/* Products Grid */}
           <main className="flex-1">
-            <ProductGrid products={products} loading={loading} error={error} />
+            <ProductGrid 
+              products={products} 
+              loading={loading} 
+              error={error} 
+              next={next} 
+              previous={previous} 
+            />
+
+            {/* Pagination Controls */}
+            {!loading && !error && products && products.length > 0 && (
+              <div className="mt-12 flex items-center justify-between border-t border-gray-200 pt-6">
+                {/* Previous Button */}
+                <button
+                  onClick={() => handlePageChange(previous)}
+                  disabled={!previous}
+                  className={`flex items-center space-x-2 px-4 py-2 text-sm border transition-colors ${
+                    previous
+                      ? 'border-black hover:bg-black hover:text-white cursor-pointer'
+                      : 'border-gray-300 text-gray-400 cursor-not-allowed'
+                  }`}
+                >
+                  <ChevronLeft className="w-4 h-4" />
+                  <span className="uppercase tracking-wider">Previous</span>
+                </button>
+
+                {/* Page Info */}
+                <div className="text-sm text-gray-600">
+                  Page <span className="font-semibold">{currentPage}</span>
+                  {count && (
+                    <span className="ml-2 text-xs">
+                      ({products.length} of {count} items)
+                    </span>
+                  )}
+                </div>
+
+                {/* Next Button */}
+                <button
+                  onClick={() => handlePageChange(next)}
+                  disabled={!next}
+                  className={`flex items-center space-x-2 px-4 py-2 text-sm border transition-colors ${
+                    next
+                      ? 'border-black hover:bg-black hover:text-white cursor-pointer'
+                      : 'border-gray-300 text-gray-400 cursor-not-allowed'
+                  }`}
+                >
+                  <span className="uppercase tracking-wider">Next</span>
+                  <ChevronRight className="w-4 h-4" />
+                </button>
+              </div>
+            )}
           </main>
         </div>
       </div>

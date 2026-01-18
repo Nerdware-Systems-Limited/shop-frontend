@@ -82,7 +82,7 @@ const OrderDetails = () => {
   // Redux state
   const orderDetails = useSelector(state => state.orderDetails);
   const { loading, error, order } = orderDetails;
-  console.log("Order Details:", order);
+  // console.log("Order Details:", order);
 
   const userLogin = useSelector(state => state.userLogin);
   const { userInfo } = userLogin;

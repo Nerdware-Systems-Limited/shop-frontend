@@ -54,7 +54,7 @@ const MyOrders = () => {
   const myOrders = useSelector(state => state.myOrders);
   const { loading, error, orders } = myOrders;
 
-  console.log('My Orders:', orders);
+  // console.log('My Orders:', orders);
 
   const userLogin = useSelector(state => state.userLogin);
   const { userInfo } = userLogin;

@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useCallback, useMemo } from 'react';
 import { useParams, useLocation, useNavigate, Link } from 'react-router-dom';
 import { useDispatch, useSelector } from 'react-redux';
 import { checkMpesaPaymentStatus } from '../../actions/paymentActions';
@@ -19,8 +19,27 @@ import {
   Home,
   ArrowRight,
   RefreshCw,
-  ExternalLink
+  ExternalLink,
+  XCircle
 } from 'lucide-react';
+
+// Payment state machine constants
+const PAYMENT_STATES = {
+  PENDING: 'pending',
+  PROCESSING: 'processing',
+  COMPLETED: 'completed',
+  FAILED: 'failed',
+  TIMEOUT: 'timeout',
+  CANCELLED: 'cancelled'
+};
+
+const RESULT_CODES = {
+  SUCCESS: 0,
+  CANCELLED: 1032,
+  INSUFFICIENT_FUNDS: 1,
+  PROCESSING: 4999,
+  TIMEOUT: 1037
+};
 
 function OrderSuccess() {
   const { orderNumber } = useParams();
@@ -30,109 +49,218 @@ function OrderSuccess() {
 
   const order = location.state?.order;
   const cart = useSelector(state => state.cart || {});
-  // Safer approach
-const mpesaPaymentStatus = useSelector(state => state.mpesaPaymentStatus || {});
-const loading = mpesaPaymentStatus.loading || false;
-const success = mpesaPaymentStatus.success || false;
-const statusInfo = mpesaPaymentStatus.statusInfo || null;
+  const mpesaPaymentStatus = useSelector(state => state.mpesaPaymentStatus || {});
 
-
-  console.log(order)
-
-  const [paymentStatus, setPaymentStatus] = useState('pending');
-  const [mpesaTransaction, setMpesaTransaction] = useState(null);
+  const [paymentState, setPaymentState] = useState(PAYMENT_STATES.PENDING);
   const [pollCount, setPollCount] = useState(0);
-  const [showMpesaPrompt, setShowMpesaPrompt] = useState(false);
   const [mounted, setMounted] = useState(false);
+  const [userAction, setUserAction] = useState(null);
 
+  const maxPollAttempts = 20; // 2 minutes (20 * 6s)
+  const pollInterval = 6000; // 6 seconds - Respects Safaricom rate limits
+
+  // Determine payment method
   const paymentMethod = cart.paymentMethod?.method || order?.payment_method;
-  const isMpesaPayment = paymentMethod === 'MPesa';
-  const maxPollAttempts = 20;
+  const isMpesaPayment = paymentMethod === 'MPesa' || paymentMethod === 'mpesa';
+
+  // Extract transaction data safely
+  const transaction = useMemo(() => {
+    return mpesaPaymentStatus?.statusInfo?.transaction || null;
+  }, [mpesaPaymentStatus]);
 
   // Animation trigger
   useEffect(() => {
     setMounted(true);
   }, []);
 
-  // Handle M-Pesa payment status updates from Redux
-  useEffect(() => {
-    if (!mpesaPaymentStatus.statusInfo) return;
+  // ==========================================
+  // PAYMENT STATE MACHINE
+  // ==========================================
+  const determinePaymentState = useCallback((transactionData) => {
+    if (!transactionData) return PAYMENT_STATES.PENDING;
 
-    const transaction = mpesaPaymentStatus.statusInfo.transaction;
-    if (transaction) {
-      setMpesaTransaction(transaction);
+    const { status, result_code, is_successful, is_pending } = transactionData;
 
-      if (transaction.status === 'completed' && transaction.result_code === 0) {
-        setPaymentStatus('completed');
-        setShowMpesaPrompt(false);
-      } else if (transaction.status === 'failed' || 'cancelled') {
-        setPaymentStatus('failed');
-        setShowMpesaPrompt(false);
-      } else if (transaction.status === 'timeout') {
-        setPaymentStatus('timeout');
-        setShowMpesaPrompt(false);
-      }
+    // console.log('Payment State Determination:', {
+    //   status,
+    //   result_code,
+    //   is_successful,
+    //   is_pending
+    // });
+
+    // Priority 1: Check is_successful flag (most reliable)
+    if (is_successful === true && result_code === RESULT_CODES.SUCCESS) {
+      return PAYMENT_STATES.COMPLETED;
     }
-  }, [mpesaPaymentStatus.statusInfo]);
 
+    // Priority 2: Check for specific failure codes
+    if (result_code === RESULT_CODES.CANCELLED) {
+      return PAYMENT_STATES.CANCELLED;
+    }
 
-  // Poll M-Pesa payment status
+    if (result_code === RESULT_CODES.INSUFFICIENT_FUNDS) {
+      return PAYMENT_STATES.FAILED;
+    }
+
+    if (result_code === RESULT_CODES.TIMEOUT) {
+      return PAYMENT_STATES.TIMEOUT;
+    }
+
+    // Priority 3: Check processing state
+    if (status === 'processing' || result_code === RESULT_CODES.PROCESSING || is_pending === true) {
+      return PAYMENT_STATES.PROCESSING;
+    }
+
+    // Priority 4: Check failed state
+    if (status === 'failed' && is_successful === false) {
+      return PAYMENT_STATES.FAILED;
+    }
+
+    // Priority 5: Check completed state
+    if (status === 'completed' && result_code === RESULT_CODES.SUCCESS) {
+      return PAYMENT_STATES.COMPLETED;
+    }
+
+    // Default: pending
+    return PAYMENT_STATES.PENDING;
+  }, []);
+
+  // Handle M-Pesa payment status updates
+  useEffect(() => {
+    if (!transaction) return;
+
+    const newState = determinePaymentState(transaction);
+    
+    // Only update if state actually changed
+    if (newState !== paymentState) {
+      console.log('Payment state transition:', paymentState, '->', newState);
+      setPaymentState(newState);
+    }
+  }, [transaction, determinePaymentState, paymentState]);
+
+  // ==========================================
+  // POLLING LOGIC - Smart & Efficient with Rate Limit Protection
+  // ==========================================
   useEffect(() => {
     if (!isMpesaPayment || !order?.mpesa_checkout_request_id) {
-      console.log("Skipping M-Pesa polling:", { 
+      console.log('Skipping M-Pesa polling:', { 
         isMpesaPayment, 
         hasCheckoutId: !!order?.mpesa_checkout_request_id 
       });
       return;
     }
 
-    // setShowMpesaPrompt(true);
+    // Stop polling if payment is in terminal state
+    const terminalStates = [
+      PAYMENT_STATES.COMPLETED,
+      PAYMENT_STATES.FAILED,
+      PAYMENT_STATES.CANCELLED
+    ];
 
-    const interval = setInterval(() => {
-      if (pollCount < maxPollAttempts && paymentStatus === 'pending') {
-        dispatch(checkMpesaPaymentStatus({ 
-          checkout_request_id: order.mpesa_checkout_request_id 
-        }));
-        setPollCount(prev => prev + 1);
-      } else {
-        clearInterval(interval);
-        if (paymentStatus === 'pending') {
-          setPaymentStatus('timeout');
-          setShowMpesaPrompt(false);
-        }
-      }
-    }, 3000);
+    if (terminalStates.includes(paymentState)) {
+      console.log('Payment in terminal state, stopping poll');
+      return;
+    }
 
-    // Initial check
-    dispatch(checkMpesaPaymentStatus({ 
-      checkout_request_id: order.mpesa_checkout_request_id 
-    }));
+    // Stop polling if max attempts reached
+    if (pollCount >= maxPollAttempts) {
+      console.log('Max poll attempts reached, setting timeout state');
+      setPaymentState(PAYMENT_STATES.TIMEOUT);
+      return;
+    }
 
-    return () => clearInterval(interval);
-  }, [isMpesaPayment, order?.mpesa_checkout_request_id, pollCount, paymentStatus, dispatch]);
-
-  const handleRetryPayment = () => {
-    navigate(`/checkout/payment`, { 
-      state: { 
-        orderId: order?.id,
-        retryPayment: true 
-      } 
-    });
-  };
-
-  const handleManualCheck = () => {
-    if (order?.mpesa_checkout_request_id) {
-      setPollCount(0);
+    // Initial immediate check
+    if (pollCount === 0) {
       dispatch(checkMpesaPaymentStatus({ 
         checkout_request_id: order.mpesa_checkout_request_id 
       }));
+      setPollCount(1);
     }
-  };
 
+    // Set up polling interval with exponential backoff after rate limit errors
+    const effectiveInterval = pollCount > 5 ? pollInterval * 1.5 : pollInterval;
+    
+    const interval = setInterval(() => {
+      console.log(`Polling attempt ${pollCount + 1}/${maxPollAttempts} (${effectiveInterval/1000}s interval)`);
+      dispatch(checkMpesaPaymentStatus({ 
+        checkout_request_id: order.mpesa_checkout_request_id 
+      }));
+      setPollCount(prev => prev + 1);
+    }, effectiveInterval);
+
+    return () => clearInterval(interval);
+  }, [
+    isMpesaPayment, 
+    order?.mpesa_checkout_request_id, 
+    pollCount, 
+    paymentState, 
+    dispatch, 
+    maxPollAttempts
+  ]);
+
+  // ==========================================
+  // USER ACTIONS
+  // ==========================================
+  const handleRetryPayment = useCallback(() => {
+    setUserAction('retry');
+    navigate(`/checkout/payment`, { 
+      state: { 
+        orderId: order?.id,
+        orderNumber: order?.order_number,
+        retryPayment: true 
+      } 
+    });
+  }, [navigate, order]);
+
+  const handleManualCheck = useCallback(() => {
+    if (!order?.mpesa_checkout_request_id) return;
+    
+    setUserAction('check');
+    setPollCount(0);
+    setPaymentState(PAYMENT_STATES.PENDING);
+    
+    dispatch(checkMpesaPaymentStatus({ 
+      checkout_request_id: order.mpesa_checkout_request_id 
+    }));
+  }, [order, dispatch]);
+
+  const handleContactSupport = useCallback(() => {
+    navigate('/contact', {
+      state: {
+        orderNumber: order?.order_number,
+        issue: 'payment_issue'
+      }
+    });
+  }, [navigate, order]);
+
+  // ==========================================
+  // LOADING INDICATOR
+  // ==========================================
+  const isLoading = useMemo(() => {
+    return mpesaPaymentStatus.loading || 
+           (paymentState === PAYMENT_STATES.PENDING && isMpesaPayment);
+  }, [mpesaPaymentStatus.loading, paymentState, isMpesaPayment]);
+
+  // ==========================================
+  // TIME REMAINING CALCULATOR
+  // ==========================================
+  const timeRemaining = useMemo(() => {
+    const remainingAttempts = maxPollAttempts - pollCount;
+    const remainingSeconds = remainingAttempts * (pollInterval / 1000);
+    const minutes = Math.floor(remainingSeconds / 60);
+    const seconds = remainingSeconds % 60;
+    return { minutes, seconds };
+  }, [pollCount, maxPollAttempts]);
+
+  // ==========================================
+  // RENDER NO ORDER
+  // ==========================================
   if (!order) {
     return (
       <div className="min-h-screen flex items-center justify-center px-4 bg-white">
-        <div className={`max-w-md w-full transition-all duration-700 ${mounted ? 'opacity-100 translate-y-0' : 'opacity-0 translate-y-4'}`}>
+        <div className={`max-w-md w-full transition-all duration-700 ${
+          mounted ? 'opacity-100 translate-y-0' : 'opacity-0 translate-y-4'
+        }`}>
           <div className="text-center space-y-6">
             <div className="inline-flex items-center justify-center w-16 h-16 border-2 border-black rounded-full">
               <AlertCircle className="h-8 w-8" />
@@ -153,69 +281,86 @@ const statusInfo = mpesaPaymentStatus.statusInfo || null;
     );
   }
 
-  const renderPaymentStatus = () => {
+  // ==========================================
+  // RENDER PAYMENT STATUS CARD
+  // ==========================================
+  const renderPaymentStatusCard = () => {
+    // CASH ON DELIVERY - Always success
     if (!isMpesaPayment) {
       return (
-        <div className={`transition-all duration-700 delay-300 ${mounted ? 'opacity-100 translate-y-0' : 'opacity-0 translate-y-4'}`}>
-          <div className="border border-black p-8 space-y-4">
-            <div className="flex items-center justify-center">
-              <div className="relative">
-                <div className="w-20 h-20 border-2 border-black rounded-full flex items-center justify-center animate-scale-in">
-                  <CheckCircle className="h-10 w-10" strokeWidth={1.5} />
-                </div>
-                <div className="absolute inset-0 border-2 border-black rounded-full animate-ping-slow opacity-20" />
-              </div>
-            </div>
-            <div className="text-center space-y-2">
-              <h2 className="text-2xl font-light">Order Confirmed</h2>
-              <p className="text-gray-600">Payment on delivery • Confirmation sent to your email</p>
-            </div>
-          </div>
-        </div>
+        <StatusCard
+          icon={<CheckCircle className="h-10 w-10" strokeWidth={1.5} />}
+          title="Order Confirmed"
+          description="Payment on delivery • Confirmation sent to your email"
+          variant="success"
+          mounted={mounted}
+        />
       );
     }
 
-    if (paymentStatus === 'completed') {
-      return (
-        <div className={`transition-all duration-700 delay-300 ${mounted ? 'opacity-100 translate-y-0' : 'opacity-0 translate-y-4'}`}>
-          <div className="border border-black p-8 space-y-4">
-            <div className="flex items-center justify-center">
-              <div className="relative">
-                <div className="w-20 h-20 border-2 border-black rounded-full flex items-center justify-center animate-scale-in">
-                  <CheckCircle className="h-10 w-10" strokeWidth={1.5} />
+    // M-PESA PAYMENT STATES
+    switch (paymentState) {
+      case PAYMENT_STATES.COMPLETED:
+        return (
+          <StatusCard
+            icon={<CheckCircle className="h-10 w-10" strokeWidth={1.5} />}
+            title="Payment Confirmed"
+            description="Your M-Pesa payment was successful"
+            variant="success"
+            mounted={mounted}
+          >
+            {transaction?.mpesa_receipt_number && (
+              <div className="inline-block border border-gray-300 px-4 py-2 mt-4">
+                <div className="text-xs text-gray-500 mb-1">M-Pesa Receipt</div>
+                <div className="font-mono text-sm font-medium">
+                  {transaction.mpesa_receipt_number}
                 </div>
-                <div className="absolute inset-0 border-2 border-black rounded-full animate-ping-slow opacity-20" />
               </div>
-            </div>
-            <div className="text-center space-y-3">
-              <h2 className="text-2xl font-light">Payment Confirmed</h2>
-              <p className="text-gray-600">Your M-Pesa payment was successful</p>
-              {mpesaTransaction?.mpesa_receipt_number && (
-                <div className="inline-block border border-gray-300 px-4 py-2">
-                  <div className="text-xs text-gray-500 mb-1">Receipt Number</div>
-                  <div className="font-mono text-sm">{mpesaTransaction.mpesa_receipt_number}</div>
-                </div>
-              )}
-            </div>
-          </div>
-        </div>
-      );
-    }
+            )}
+          </StatusCard>
+        );
 
-    if (paymentStatus === 'failed') {
-      return (
-        <div className={`transition-all duration-700 delay-300 ${mounted ? 'opacity-100 translate-y-0' : 'opacity-0 translate-y-4'}`}>
-          <div className="border border-black p-8 space-y-4">
-            <div className="flex items-center justify-center">
-              <div className="w-20 h-20 border-2 border-black rounded-full flex items-center justify-center">
-                <AlertCircle className="h-10 w-10" strokeWidth={1.5} />
+      case PAYMENT_STATES.PROCESSING:
+        return (
+          <StatusCard
+            icon={<Loader2 className="h-10 w-10 animate-spin" strokeWidth={1.5} />}
+            title="Processing Payment"
+            description={transaction?.result_desc || "Waiting for M-Pesa confirmation"}
+            variant="processing"
+            mounted={mounted}
+          >
+            <div className="flex flex-col items-center gap-3 mt-4">
+              <div className="flex items-center gap-2 text-sm text-gray-500">
+                <div className="flex gap-1">
+                  {[0, 150, 300].map((delay, i) => (
+                    <div 
+                      key={i}
+                      className="w-1.5 h-1.5 bg-black rounded-full animate-bounce" 
+                      style={{animationDelay: `${delay}ms`}} 
+                    />
+                  ))}
+                </div>
+                <span>
+                  {timeRemaining.minutes}:{timeRemaining.seconds.toString().padStart(2, '0')} remaining
+                </span>
               </div>
-            </div>
-            <div className="text-center space-y-3">
-              <h2 className="text-2xl font-light">Payment Failed</h2>
-              <p className="text-gray-600">
-                {mpesaTransaction?.result_desc || 'Transaction not completed'}
+              <p className="text-xs text-gray-500 text-center max-w-sm">
+                Check your phone for the M-Pesa prompt. This usually takes 10-30 seconds.
               </p>
+            </div>
+          </StatusCard>
+        );
+
+      case PAYMENT_STATES.FAILED:
+        return (
+          <StatusCard
+            icon={<XCircle className="h-10 w-10" strokeWidth={1.5} />}
+            title="Payment Failed"
+            description={transaction?.result_desc || 'Transaction could not be completed'}
+            variant="error"
+            mounted={mounted}
+          >
+            <div className="flex flex-col sm:flex-row gap-3 mt-6">
               <Button 
                 onClick={handleRetryPayment}
                 className="bg-black hover:bg-gray-800 text-white border-0"
@@ -223,99 +368,96 @@ const statusInfo = mpesaPaymentStatus.statusInfo || null;
                 <RefreshCw className="mr-2 h-4 w-4" />
                 Retry Payment
               </Button>
+              <Button 
+                onClick={handleContactSupport}
+                variant="outline"
+                className="border-black hover:bg-gray-50"
+              >
+                Contact Support
+              </Button>
             </div>
-          </div>
-        </div>
-      );
-    }
+          </StatusCard>
+        );
 
-    if (paymentStatus === 'timeout') {
-      return (
-        <div className={`transition-all duration-700 delay-300 ${mounted ? 'opacity-100 translate-y-0' : 'opacity-0 translate-y-4'}`}>
-          <div className="border border-black p-8 space-y-4">
-            <div className="flex items-center justify-center">
-              <div className="w-20 h-20 border-2 border-black rounded-full flex items-center justify-center">
-                <Clock className="h-10 w-10" strokeWidth={1.5} />
-              </div>
+      case PAYMENT_STATES.CANCELLED:
+        return (
+          <StatusCard
+            icon={<XCircle className="h-10 w-10" strokeWidth={1.5} />}
+            title="Payment Cancelled"
+            description="You cancelled the M-Pesa payment request"
+            variant="error"
+            mounted={mounted}
+          >
+            <div className="flex justify-center mt-6">
+              <Button 
+                onClick={handleRetryPayment}
+                className="bg-black hover:bg-gray-800 text-white border-0 px-8"
+              >
+                <RefreshCw className="mr-2 h-4 w-4" />
+                Try Again
+              </Button>
             </div>
-            <div className="text-center space-y-3">
-              <h2 className="text-2xl font-light">Payment Pending</h2>
-              <p className="text-gray-600">
-                Confirmation may take a few minutes
-              </p>
-              <div className="flex flex-col sm:flex-row gap-3 justify-center">
-                <Button 
-                  onClick={handleManualCheck}
-                  variant="outline"
-                  className="border-black hover:bg-gray-50"
-                  disabled={mpesaPaymentStatus.loading}
-                >
-                  {mpesaPaymentStatus.loading ? (
-                    <>
-                      <Loader2 className="mr-2 h-4 w-4 animate-spin" />
-                      Checking...
-                    </>
-                  ) : (
-                    <>
-                      <RefreshCw className="mr-2 h-4 w-4" />
-                      Check Status
-                    </>
-                  )}
-                </Button>
-                <Button 
-                  onClick={handleRetryPayment}
-                  className="bg-black hover:bg-gray-800 text-white border-0"
-                >
-                  Retry Payment
-                </Button>
-              </div>
-            </div>
-          </div>
-        </div>
-      );
-    }
+          </StatusCard>
+        );
 
-    return (
-      <div className={`transition-all duration-700 delay-300 ${mounted ? 'opacity-100 translate-y-0' : 'opacity-0 translate-y-4'}`}>
-        <div className="border border-black p-8 space-y-4">
-          <div className="flex items-center justify-center">
-            <div className="relative">
-              <div className="w-20 h-20 border-2 border-black rounded-full flex items-center justify-center">
-                <Loader2 className="h-10 w-10 animate-spin" strokeWidth={1.5} />
-              </div>
+      case PAYMENT_STATES.TIMEOUT:
+        return (
+          <StatusCard
+            icon={<Clock className="h-10 w-10" strokeWidth={1.5} />}
+            title="Payment Verification Timeout"
+            description="We couldn't confirm your payment in time. Please check your M-Pesa messages."
+            variant="warning"
+            mounted={mounted}
+          >
+            <div className="flex flex-col sm:flex-row gap-3 mt-6">
+              <Button 
+                onClick={handleManualCheck}
+                variant="outline"
+                className="border-black hover:bg-gray-50"
+                disabled={isLoading}
+              >
+                {isLoading ? (
+                  <>
+                    <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                    Checking...
+                  </>
+                ) : (
+                  <>
+                    <RefreshCw className="mr-2 h-4 w-4" />
+                    Check Status
+                  </>
+                )}
+              </Button>
+              <Button 
+                onClick={handleRetryPayment}
+                className="bg-black hover:bg-gray-800 text-white border-0"
+              >
+                Retry Payment
+              </Button>
             </div>
-          </div>
-          <div className="text-center space-y-3">
-            <h2 className="text-2xl font-light">
-              {showMpesaPrompt ? 'Complete on Phone' : 'Verifying Payment'}
-            </h2>
-            <p className="text-gray-600">
-              {showMpesaPrompt 
-                ? 'Check your phone for M-Pesa prompt'
-                : 'This usually takes a few seconds'}
-            </p>
-            <div className="inline-flex items-center gap-2 text-sm text-gray-500">
-              <div className="flex gap-1">
-                <div className="w-1.5 h-1.5 bg-black rounded-full animate-bounce" style={{animationDelay: '0ms'}} />
-                <div className="w-1.5 h-1.5 bg-black rounded-full animate-bounce" style={{animationDelay: '150ms'}} />
-                <div className="w-1.5 h-1.5 bg-black rounded-full animate-bounce" style={{animationDelay: '300ms'}} />
-              </div>
-              <span>
-                {Math.floor((maxPollAttempts - pollCount) * 3 / 60)}:
-                {((maxPollAttempts - pollCount) * 3 % 60).toString().padStart(2, '0')}
-              </span>
-            </div>
-          </div>
-        </div>
-      </div>
-    );
+          </StatusCard>
+        );
+
+      default:
+        return (
+          <StatusCard
+            icon={<Loader2 className="h-10 w-10 animate-spin" strokeWidth={1.5} />}
+            title="Verifying Payment"
+            description="Please wait while we verify your payment"
+            variant="processing"
+            mounted={mounted}
+          />
+        );
+    }
   };
 
   return (
     <div className="min-h-screen bg-white pt-20 px-4 pb-16">
       <div className="max-w-4xl mx-auto space-y-12">
         {/* Header */}
-        <div className={`text-center space-y-4 transition-all duration-700 ${mounted ? 'opacity-100 translate-y-0' : 'opacity-0 translate-y-4'}`}>
+        <div className={`text-center space-y-4 transition-all duration-700 ${
+          mounted ? 'opacity-100 translate-y-0' : 'opacity-0 translate-y-4'
+        }`}>
           <h1 className="text-4xl md:text-5xl font-light tracking-tight">Thank You</h1>
           <div className="inline-flex items-center gap-2 text-gray-600">
             <span className="text-sm">Order</span>
@@ -326,10 +468,12 @@ const statusInfo = mpesaPaymentStatus.statusInfo || null;
         </div>
 
         {/* Payment Status */}
-        {renderPaymentStatus()}
+        {renderPaymentStatusCard()}
 
         {/* Order Details Grid */}
-        <div className={`grid md:grid-cols-2 gap-8 transition-all duration-700 delay-500 ${mounted ? 'opacity-100 translate-y-0' : 'opacity-0 translate-y-4'}`}>
+        <div className={`grid md:grid-cols-2 gap-8 transition-all duration-700 delay-500 ${
+          mounted ? 'opacity-100 translate-y-0' : 'opacity-0 translate-y-4'
+        }`}>
           {/* Delivery */}
           <div className="space-y-4">
             <div className="flex items-center gap-2 pb-2 border-b border-gray-200">
@@ -393,7 +537,9 @@ const statusInfo = mpesaPaymentStatus.statusInfo || null;
         </div>
 
         {/* Timeline */}
-        <div className={`transition-all duration-700 delay-700 ${mounted ? 'opacity-100 translate-y-0' : 'opacity-0 translate-y-4'}`}>
+        <div className={`transition-all duration-700 delay-700 ${
+          mounted ? 'opacity-100 translate-y-0' : 'opacity-0 translate-y-4'
+        }`}>
           <div className="border border-gray-200 p-8">
             <h3 className="font-light text-lg mb-6">What's Next</h3>
             <div className="space-y-6">
@@ -420,9 +566,11 @@ const statusInfo = mpesaPaymentStatus.statusInfo || null;
         </div>
 
         {/* Actions */}
-        <div className={`flex flex-col sm:flex-row gap-4 transition-all duration-700 delay-900 ${mounted ? 'opacity-100 translate-y-0' : 'opacity-0 translate-y-4'}`}>
+        <div className={`flex flex-col sm:flex-row gap-4 transition-all duration-700 delay-900 ${
+          mounted ? 'opacity-100 translate-y-0' : 'opacity-0 translate-y-4'
+        }`}>
           <Button
-            onClick={() => navigate(`/orders/${order.id}`)}
+            onClick={() => navigate(`/order/${order.order_number}`)}
             className="flex-1 bg-black hover:bg-gray-800 text-white border-0 h-12 group"
           >
             <span>View Order</span>
@@ -440,7 +588,9 @@ const statusInfo = mpesaPaymentStatus.statusInfo || null;
         </div>
 
         {/* Footer */}
-        <div className={`text-center space-y-2 pt-8 transition-all duration-700 delay-1000 ${mounted ? 'opacity-100' : 'opacity-0'}`}>
+        <div className={`text-center space-y-2 pt-8 transition-all duration-700 delay-1000 ${
+          mounted ? 'opacity-100' : 'opacity-0'
+        }`}>
           <p className="text-sm text-gray-600">Questions about your order?</p>
           <Link 
             to="/contact" 
@@ -454,28 +604,14 @@ const statusInfo = mpesaPaymentStatus.statusInfo || null;
 
       <style>{`
         @keyframes scale-in {
-          0% {
-            transform: scale(0.8);
-            opacity: 0;
-          }
-          50% {
-            transform: scale(1.05);
-          }
-          100% {
-            transform: scale(1);
-            opacity: 1;
-          }
+          0% { transform: scale(0.8); opacity: 0; }
+          50% { transform: scale(1.05); }
+          100% { transform: scale(1); opacity: 1; }
         }
 
         @keyframes ping-slow {
-          0%, 100% {
-            transform: scale(1);
-            opacity: 0.2;
-          }
-          50% {
-            transform: scale(1.5);
-            opacity: 0;
-          }
+          0%, 100% { transform: scale(1); opacity: 0.2; }
+          50% { transform: scale(1.5); opacity: 0; }
         }
 
         .animate-scale-in {
@@ -489,5 +625,42 @@ const statusInfo = mpesaPaymentStatus.statusInfo || null;
     </div>
   );
 }
+
+// ==========================================
+// STATUS CARD COMPONENT
+// ==========================================
+const StatusCard = ({ icon, title, description, variant, mounted, children }) => {
+  const variantStyles = {
+    success: 'border-green-500 bg-green-50',
+    error: 'border-red-500 bg-red-50',
+    warning: 'border-yellow-500 bg-yellow-50',
+    processing: 'border-blue-500 bg-blue-50',
+    default: 'border-gray-300 bg-white'
+  };
+
+  return (
+    <div className={`transition-all duration-700 delay-300 ${
+      mounted ? 'opacity-100 translate-y-0' : 'opacity-0 translate-y-4'
+    }`}>
+      <div className={`border-2 p-8 space-y-4 ${variantStyles[variant] || variantStyles.default}`}>
+        <div className="flex items-center justify-center">
+          <div className="relative">
+            <div className="w-20 h-20 border-2 border-black rounded-full flex items-center justify-center animate-scale-in bg-white">
+              {icon}
+            </div>
+            {variant === 'success' && (
+              <div className="absolute inset-0 border-2 border-black rounded-full animate-ping-slow opacity-20" />
+            )}
+          </div>
+        </div>
+        <div className="text-center space-y-2">
+          <h2 className="text-2xl font-light">{title}</h2>
+          <p className="text-gray-600">{description}</p>
+        </div>
+        {children}
+      </div>
+    </div>
+  );
+};
 
 export default OrderSuccess;

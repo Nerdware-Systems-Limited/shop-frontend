@@ -62,6 +62,8 @@ export const listProducts = (params = {}) => async (dispatch) => {
     if (params.on_sale !== undefined) queryParams.append('on_sale', params.on_sale);
     if (params.ordering) queryParams.append('ordering', params.ordering);
     if (params.page) queryParams.append('page', params.page);
+    // Add cursor for pagination
+    if (params.cursor) queryParams.append('cursor', params.cursor);
 
     const { data } = await apiClient.get(`/products/?${queryParams.toString()}`);
 

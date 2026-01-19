@@ -1,4 +1,4 @@
-import { useEffect, useState, useMemo } from 'react';
+import { useEffect, useState, useMemo, useRef } from 'react';
 import { useParams, Link, useNavigate } from 'react-router-dom';
 import { useDispatch, useSelector } from 'react-redux';
 import { getProductDetails } from '../actions/productActions';
@@ -22,6 +22,7 @@ const ProductDetails = () => {
   const [activeTab, setActiveTab] = useState('description');
   const [notification, setNotification] = useState({ show: false, message: '', type: '' });
   const [isWishlisted, setIsWishlisted] = useState(false);
+  const tabsSectionRef = useRef(null);
 
   useEffect(() => {
     dispatch(getProductDetails(slug));
@@ -94,31 +95,123 @@ const ProductDetails = () => {
     return [];
   }, [product]);
 
-  // Enhanced description rendering
+  // Description rendering
   const renderDescription = () => {
     if (!product?.description) return null;
     
-    const paragraphs = product.description.split('\n\n').filter(p => p.trim());
+    // Normalize line breaks (handle \r\n, \n, etc.)
+    const content = product.description.replace(/\r\n/g, '\n').trim();
     
-    return paragraphs.map((paragraph, idx) => {
-      const isHeading = paragraph.includes(':') && paragraph.length < 50 && !paragraph.includes('.');
-      
-      if (isHeading) {
-        return (
-          <h3 key={idx} className="text-xs sm:text-sm font-medium uppercase tracking-widest mt-6 mb-3">
-            {paragraph}
-          </h3>
-        );
-      }
-      
-      return (
-        <p key={idx} className="text-[10px] sm:text-xs leading-relaxed text-gray-600 mb-4">
-          {paragraph}
-        </p>
-      );
-    });
+    // Split by double line breaks for major sections
+    const sections = content.split('\n\n').filter(s => s.trim());
+    
+    return (
+      <div className="max-w-none prose prose-sm sm:prose lg:prose-lg">
+        {sections.map((section, sectionIdx) => {
+          const trimmed = section.trim();
+          const lines = trimmed.split('\n').map(l => l.trim()).filter(l => l);
+          
+          // CASE 1: Multi-line bulleted/numbered list
+          const listPattern = /^(?:[-•*●◦▪▸→]|\d+[\.):])\s+/;
+          const listLines = lines.filter(l => listPattern.test(l));
+          
+          if (listLines.length > 1 && listLines.length === lines.length) {
+            return (
+              <ul 
+                key={sectionIdx} 
+                className="space-y-2 sm:space-y-2.5 lg:space-y-3 mb-4 sm:mb-6 lg:mb-8 ml-0 sm:ml-1 pl-0"
+              >
+                {lines.map((item, i) => {
+                  const cleanItem = item.replace(listPattern, '').trim();
+                  return (
+                    <li 
+                      key={i} 
+                      className="text-[11px] sm:text-xs md:text-sm lg:text-base leading-relaxed sm:leading-relaxed lg:leading-loose text-gray-700 flex items-start gap-2 sm:gap-2.5 lg:gap-3"
+                    >
+                      <span className="mt-[0.2em] text-black font-bold text-xs sm:text-sm lg:text-base flex-shrink-0">
+                        •
+                      </span>
+                      <span className="flex-1 min-w-0 break-words">
+                        {cleanItem}
+                      </span>
+                    </li>
+                  );
+                })}
+              </ul>
+            );
+          }
+          
+          // CASE 2: Single line that's a heading
+          if (lines.length === 1) {
+            const line = lines[0];
+            
+            // Heading patterns: ends with colon, all caps (>4 chars), or short and bold-worthy
+            const isHeading = (
+              line.endsWith(':') ||
+              (line === line.toUpperCase() && line.length > 4 && line.length < 60) ||
+              (line.length < 50 && /^[A-Z][A-Za-z\s]+:?$/.test(line))
+            );
+            
+            if (isHeading) {
+              return (
+                <h3 
+                  key={sectionIdx} 
+                  className="text-xs sm:text-sm md:text-base lg:text-lg font-semibold uppercase tracking-wider mt-6 sm:mt-8 lg:mt-10 mb-2 sm:mb-3 lg:mb-4 first:mt-0 text-black break-words"
+                >
+                  {line.replace(/:$/, '')}
+                </h3>
+              );
+            }
+          }
+          
+          // CASE 3: Multiple paragraphs within a section (split by single \n)
+          if (lines.length > 1 && listLines.length === 0) {
+            // Check if these are actually separate thoughts or one flowing paragraph
+            const avgLength = lines.reduce((sum, l) => sum + l.length, 0) / lines.length;
+            
+            // If lines are short, they're likely separate paragraphs
+            if (avgLength < 100) {
+              return (
+                <div 
+                  key={sectionIdx} 
+                  className="space-y-2 sm:space-y-3 lg:space-y-4 mb-4 sm:mb-6 lg:mb-8"
+                >
+                  {lines.map((para, i) => (
+                    <p 
+                      key={i} 
+                      className="text-[11px] sm:text-xs md:text-sm lg:text-base leading-relaxed sm:leading-relaxed lg:leading-loose text-gray-600 break-words"
+                    >
+                      {para}
+                    </p>
+                  ))}
+                </div>
+              );
+            }
+            
+            // Otherwise, join them as one paragraph
+            return (
+              <p 
+                key={sectionIdx} 
+                className="text-[11px] sm:text-xs md:text-sm lg:text-base leading-relaxed sm:leading-relaxed lg:leading-loose text-gray-600 mb-3 sm:mb-4 lg:mb-6 break-words"
+              >
+                {lines.join(' ')}
+              </p>
+            );
+          }
+          
+          // CASE 4: Regular single paragraph
+          return (
+            <p 
+              key={sectionIdx} 
+              className="text-[11px] sm:text-xs md:text-sm lg:text-base leading-relaxed sm:leading-relaxed lg:leading-loose text-gray-600 mb-3 sm:mb-4 lg:mb-6 break-words hyphens-auto"
+            >
+              {trimmed}
+            </p>
+          );
+        })}
+      </div>
+    );
   };
-
   // Notification system
   const showNotification = (message, type = 'success') => {
     setNotification({ show: true, message, type });
@@ -152,14 +245,11 @@ const ProductDetails = () => {
     }
   };
 
-  const handleBuyNow = () => {
-    if (!product.is_in_stock || stockStatus.available === 0) {
-      showNotification('Product is out of stock', 'error');
-      return;
-    }
-    // Cart will be updated by AddToCartButton
-    setTimeout(() => navigate('/cart'), 500);
+  const handleCallNow = () => {
+    // Trigger phone call using tel: link
+    window.location.href = 'tel:+254724013583';
   };
+
 
   // Get proper image URL
   const getImageUrl = (imageObj) => {
@@ -282,14 +372,15 @@ const ProductDetails = () => {
                   )}
                 </div>
                 
-                <div className="flex space-x-2">
-                  <button
+                <div>
+                  {/* <button
+                  className="flex space-x-2"
                     onClick={handleToggleWishlist}
                     className="p-2 border border-black hover:bg-black hover:text-white transition-colors"
                     aria-label="Add to wishlist"
                   >
                     <Heart className={`w-4 h-4 ${isWishlisted ? 'fill-current' : ''}`} />
-                  </button>
+                  </button> */}
                   <button
                     onClick={handleShare}
                     className="p-2 border border-black hover:bg-black hover:text-white transition-colors"
@@ -385,9 +476,17 @@ const ProductDetails = () => {
                   </ul>
                   {parsedFeatures.length > 3 && (
                     <button
-                      onClick={() => setActiveTab('specifications')}
-                      className="text-[9px] text-black hover:opacity-60 underline mt-2"
-                    >
+                      onClick={() => {
+                          setActiveTab('specifications');
+                          setTimeout(() => {
+                            tabsSectionRef.current?.scrollIntoView({ 
+                              behavior: 'smooth', 
+                              block: 'start' 
+                            });
+                          }, 100);
+                        }}
+                        className="text-[9px] text-black hover:opacity-60 underline mt-2"
+                      >
                       View all features →
                     </button>
                   )}
@@ -395,9 +494,57 @@ const ProductDetails = () => {
               )}
 
               {/* Short Description */}
-              <p className="text-[10px] sm:text-xs leading-relaxed text-gray-600 border-t border-black pt-4 sm:pt-6">
-                {product.description?.substring(0, 200)}...
-              </p>
+              {product.description && (
+                <div className="border-t border-black pt-4 sm:pt-6">
+                  <p className="text-[10px] sm:text-xs leading-relaxed text-gray-600">
+                    {product.description.substring(0, 250)}
+                    {product.description.length > 250 && '...'}
+                  </p>
+                  {product.description.length > 250 && (
+                    <button
+                      onClick={() => {
+                        setActiveTab('description');
+                        setTimeout(() => {
+                          tabsSectionRef.current?.scrollIntoView({ 
+                            behavior: 'smooth', 
+                            block: 'start' 
+                          });
+                        }, 100);
+                      }}
+                      className="text-[9px] sm:text-[10px] text-black hover:opacity-60 underline mt-2 uppercase tracking-widest"
+                    >
+                      Read Full Description →
+                    </button>
+                  )}
+                </div>
+              )}
+
+              {/* Weight and Dimensions */}
+              {(product.weight || product.dimensions) && (
+                <div className="grid grid-cols-2 gap-3 p-4 bg-gray-50 border border-gray-200">
+                  {product.weight && (
+                    <div>
+                      <p className="text-[9px] sm:text-[10px] uppercase tracking-widest text-gray-500 mb-1">
+                        Weight
+                      </p>
+                      <p className="text-xs sm:text-sm font-medium">
+                        {product.weight} kg
+                      </p>
+                    </div>
+                  )}
+                  
+                  {product.dimensions && (
+                    <div>
+                      <p className="text-[9px] sm:text-[10px] uppercase tracking-widest text-gray-500 mb-1">
+                        Dimensions
+                      </p>
+                      <p className="text-xs sm:text-sm font-medium">
+                        {product.dimensions.length} × {product.dimensions.width} × {product.dimensions.height} cm
+                      </p>
+                    </div>
+                  )}
+                </div>
+              )}
 
               {/* Add to Cart Section - Using imported component */}
               {product.is_in_stock && stockStatus.available > 0 && (
@@ -409,12 +556,12 @@ const ProductDetails = () => {
                     variant="default"
                   />
 
-                  {/* Buy Now Button */}
+                  {/* Call Now Button */}
                   <button 
-                    onClick={handleBuyNow}
+                    onClick={handleCallNow}
                     className="w-full px-4 sm:px-6 py-3 sm:py-4 border-2 border-black text-[10px] sm:text-xs uppercase tracking-widest hover:bg-black hover:text-white transition-colors"
                   >
-                    Buy Now
+                    Call Now
                   </button>
 
                   {/* Cart Status */}
@@ -469,7 +616,7 @@ const ProductDetails = () => {
           </div>
 
           {/* Tabs Section */}
-          <div className="mt-12 sm:mt-16 lg:mt-20 border-t border-black">
+          <div ref={tabsSectionRef} className="mt-12 sm:mt-16 lg:mt-20 border-t border-black">
             {/* Tab Headers */}
             <div className="flex border-b border-black overflow-x-auto">
               <button
@@ -505,27 +652,31 @@ const ProductDetails = () => {
             </div>
 
             {/* Tab Content */}
-            <div className="py-6 sm:py-8 lg:py-12">
-              {activeTab === 'description' && (
-                <div className="max-w-4xl">
-                  {renderDescription()}
-                </div>
-              )}
+            <div className="py-6 sm:py-8 lg:py-12 px-2 sm:px-4 lg:px-6">
+            {activeTab === 'description' && (
+              <div className="max-w-4xl mx-auto">
+                {renderDescription()}
+              </div>
+            )}
 
-              {activeTab === 'specifications' && (
+            {activeTab === 'specifications' && (
+              <div className="max-w-4xl mx-auto">
                 <ProductSpecifications 
                   specifications={product.specifications}
                   parsedFeatures={parsedFeatures}
                 />
-              )}
+              </div>
+            )}
 
-              {activeTab === 'reviews' && (
+            {activeTab === 'reviews' && (
+              <div className="max-w-5xl mx-auto">
                 <ProductReviews 
                   reviews={product.reviews} 
                   productId={product.id} 
                 />
-              )}
-            </div>
+              </div>
+            )}
+          </div>
           </div>
 
           {/* Related Products */}

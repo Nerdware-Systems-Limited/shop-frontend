@@ -57,7 +57,7 @@ const FilterSidebar = ({ filters, onFilterChange, onClearFilters, onClose }) => 
     if (localFilters.category) count++;
     if (localFilters.brand) count++;
     if (localFilters.minPrice > 0) count++;
-    if (localFilters.maxPrice < 10000) count++;
+    if (localFilters.maxPrice < 100000) count++;
     if (localFilters.inStock) count++;
     if (localFilters.onSale) count++;
     return count;
@@ -91,7 +91,7 @@ const FilterSidebar = ({ filters, onFilterChange, onClearFilters, onClose }) => 
       category: '',
       brand: '',
       minPrice: 0,
-      maxPrice: 10000,
+      maxPrice: 100000,
       inStock: false,
       onSale: false,
     };

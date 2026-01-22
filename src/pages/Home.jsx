@@ -7,6 +7,7 @@ import { ChevronRight } from 'lucide-react';
 import { Skeleton } from "@/components/ui/skeleton"
 import AddToCartButton from '../components/products/AddToCartButton'
 import HeroSection from './HeroSection';
+import BrandCatalog from '../components/products/BrandCatalog';
 
 const Home = () => {
   const dispatch = useDispatch();
@@ -124,6 +125,11 @@ const Home = () => {
         </div>
 
         <ProductGrid products={featuredProducts?.results} loading={loading} error={error} />
+      </section>
+
+      {/* Brands Preview */}
+      <section className="max-w-7xl mx-auto px-4 py-20 border-t border-black">
+        <BrandCatalog />
       </section>
 
       {/* About Section */}

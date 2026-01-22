@@ -325,7 +325,7 @@ const initialFilterState = {
   category: '',
   brand: '',
   minPrice: 0,
-  maxPrice: 10000,
+  maxPrice: 1000000,
   inStock: false,
   onSale: false,
   sortBy: '',

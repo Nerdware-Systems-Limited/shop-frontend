@@ -13,6 +13,8 @@ const FilterSidebar = ({ filters, onFilterChange, onClearFilters, onClose }) => 
   const [brandSearch, setBrandSearch] = useState('');
   const [priceError, setPriceError] = useState('');
 
+  console.log(brands)
+
   // Load categories and brands on mount
   useEffect(() => {
     dispatch(listCategories());
@@ -57,7 +59,7 @@ const FilterSidebar = ({ filters, onFilterChange, onClearFilters, onClose }) => 
     if (localFilters.category) count++;
     if (localFilters.brand) count++;
     if (localFilters.minPrice > 0) count++;
-    if (localFilters.maxPrice < 100000) count++;
+    if (localFilters.maxPrice < 1000000) count++;
     if (localFilters.inStock) count++;
     if (localFilters.onSale) count++;
     return count;
@@ -91,7 +93,7 @@ const FilterSidebar = ({ filters, onFilterChange, onClearFilters, onClose }) => 
       category: '',
       brand: '',
       minPrice: 0,
-      maxPrice: 100000,
+      maxPrice: 1000000,
       inStock: false,
       onSale: false,
     };
@@ -287,7 +289,7 @@ const FilterSidebar = ({ filters, onFilterChange, onClearFilters, onClose }) => 
               {priceError && (
                 <p className="text-[10px] text-red-600">{priceError}</p>
               )}
-              {localFilters.minPrice > 0 || localFilters.maxPrice < 10000 ? (
+              {localFilters.minPrice > 0 || localFilters.maxPrice < 1000000 ? (
                 <p className="text-[10px] text-gray-500">
                   KSH {localFilters.minPrice.toLocaleString()} - KSH {localFilters.maxPrice.toLocaleString()}
                 </p>

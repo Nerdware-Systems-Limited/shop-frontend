@@ -16,14 +16,13 @@ const Products = () => {
   const [sortBy, setSortBy] = useState('');
   const [currentPage, setCurrentPage] = useState(1);
 
-  console.log("Product List", products, count, next, previous);
 
   useEffect(() => {
     const params = {
       category: searchParams.get('category') || filters.category,
       brand: searchParams.get('brand') || filters.brand,
       min_price: filters.minPrice || 0,
-      max_price: filters.maxPrice || 10000,
+      max_price: filters.maxPrice || 1000000,
       in_stock: filters.inStock,
       on_sale: filters.onSale,
       ordering: sortBy,
@@ -93,6 +92,7 @@ const Products = () => {
     { label: 'Name: A to Z', value: 'name' },
     { label: 'Name: Z to A', value: '-name' },
   ];
+
 
   return (
     <div className="min-h-screen">
@@ -180,7 +180,7 @@ const Products = () => {
             />
 
             {/* Pagination Controls */}
-            {!loading && !error && products && products.length > 0 && (
+            {!loading && !error && products && products.length > 0 && (previous || next) && (
               <div className="mt-12 flex items-center justify-between border-t border-gray-200 pt-6">
                 {/* Previous Button */}
                 <button

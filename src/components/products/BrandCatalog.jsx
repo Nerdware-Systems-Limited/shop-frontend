@@ -1,8 +1,8 @@
 import { useEffect, useState, useMemo } from 'react';
 import { useDispatch, useSelector } from 'react-redux';
 import { listBrands, getBrandProducts } from '../../actions/productActions';
-import { Search, ChevronRight, Package, TrendingUp, Loader2 } from 'lucide-react';
 import ProductGrid from './ProductGrid';
+import { Search, ChevronRight, Package, TrendingUp, Loader2 } from 'lucide-react';
 
 // Navigation helper (you can replace this with your router's navigate function)
 const navigate = (path) => {
@@ -21,8 +21,6 @@ const BrandCatalog = () => {
   const [sortBy, setSortBy] = useState('name'); // name, product_count
   const [loadedBrandProducts, setLoadedBrandProducts] = useState({});
   const [expandedBrand, setExpandedBrand] = useState(null);
-
-  console.log("brandProducts", brandProducts);
 
   // Fetch brands on mount
   useEffect(() => {
@@ -70,21 +68,30 @@ const BrandCatalog = () => {
     if (loadedBrandProducts[brandSlug]) return; // Already loaded
 
     try {
-      const response = await dispatch(getBrandProducts(brandSlug));
+      await dispatch(getBrandProducts(brandSlug));
       
-      // Store products in local state
-      setLoadedBrandProducts(prev => ({
-        ...prev,
-        [brandSlug]: Array.isArray(response?.payload) ? response.payload : []
-      }));
+      // The response will be in Redux state, we'll get it from there
+      // No need to store in local state immediately
     } catch (err) {
       console.error(`Failed to load products for brand ${brandSlug}:`, err);
-      setLoadedBrandProducts(prev => ({
-        ...prev,
-        [brandSlug]: []
-      }));
     }
   };
+
+  // Update loaded products when Redux state changes
+  useEffect(() => {
+    if (brandProducts && expandedBrand) {
+      const products = Array.isArray(brandProducts?.results) 
+        ? brandProducts.results 
+        : Array.isArray(brandProducts) 
+        ? brandProducts 
+        : [];
+      
+      setLoadedBrandProducts(prev => ({
+        ...prev,
+        [expandedBrand]: products
+      }));
+    }
+  }, [brandProducts, expandedBrand]);
 
   // Handle brand card expansion (load products on first expand)
   const handleBrandExpand = (brandSlug) => {
@@ -216,9 +223,13 @@ const BrandCard = ({
   onBrandClick
 }) => {
   // Get first 4 products for preview
-  const previewProducts = products.slice(0, 4);
+  const previewProducts = useMemo(() => {
+    if (!Array.isArray(products)) return [];
+    return products.slice(0, 4);
+  }, [products]);
 
-  return (
+  console.log("Brand Card - products:", products);
+  console.log("Brand Card - previewProducts:", previewProducts);return (
     <div className="border border-gray-200 hover:border-black transition-colors">
       {/* Brand Header */}
       <div className="p-6 bg-gray-50 border-b border-gray-200">
@@ -284,23 +295,15 @@ const BrandCard = ({
             <div className="flex items-center justify-center py-12">
               <Loader2 className="w-6 h-6 animate-spin text-gray-400" />
             </div>
-          ) : previewProducts.length === 0 ? (
-            <div className="text-center py-12">
-              <Package className="w-12 h-12 mx-auto text-gray-300 mb-3" />
-              <p className="text-xs text-gray-500">No products available</p>
-            </div>
           ) : (
             <>
-              {/* Products Grid */}
-              <div className="grid grid-cols-2 md:grid-cols-4 gap-4 mb-6">
-                {/* {previewProducts.map((product) => (
-                  <ProductPreviewCard
-                    key={product.id}
-                    product={product}
-                    onClick={() => onProductClick(product.slug)}
-                  />
-                ))} */}
-                <ProductGrid products={brandProducts?.results} loading={productsLoading} />
+              {/* Products Grid - Using ProductGrid component */}
+              <div className="mb-6">
+                <ProductGrid 
+                  products={previewProducts}
+                  loading={false}
+                  error={null}
+                />
               </div>
 
               {/* View All Button */}
@@ -319,55 +322,6 @@ const BrandCard = ({
           )}
         </div>
       )}
-    </div>
-  );
-};
-
-// Product Preview Card Component
-const ProductPreviewCard = ({ product, onClick }) => {
-  const primaryImage = product.images?.find(img => img.is_primary) || product.images?.[0];
-
-  return (
-    <div
-      onClick={onClick}
-      className="group cursor-pointer border border-gray-200 hover:border-black transition-colors"
-    >
-      {/* Product Image */}
-      <div className="aspect-square bg-gray-50 overflow-hidden">
-        {primaryImage ? (
-          <img
-            src={primaryImage.image}
-            alt={product.name}
-            className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300"
-          />
-        ) : (
-          <div className="w-full h-full flex items-center justify-center">
-            <Package className="w-12 h-12 text-gray-300" />
-          </div>
-        )}
-      </div>
-
-      {/* Product Info */}
-      <div className="p-3">
-        <h3 className="text-xs font-medium line-clamp-2 mb-2 group-hover:text-gray-600 transition-colors">
-          {product.name}
-        </h3>
-        <div className="flex items-center justify-between">
-          <div>
-            {product.sale_price ? (
-              <div className="flex items-center gap-2">
-                <span className="text-sm font-medium">KSH {product.sale_price}</span>
-                <span className="text-xs text-gray-400 line-through">KSH {product.price}</span>
-              </div>
-            ) : (
-              <span className="text-sm font-medium">KSH {product.price}</span>
-            )}
-          </div>
-          {product.stock_quantity === 0 && (
-            <span className="text-[10px] text-red-600 uppercase">Out of Stock</span>
-          )}
-        </div>
-      </div>
     </div>
   );
 };

@@ -26,29 +26,20 @@ import PrivacyPolicy from './pages/PrivacyPolicy';
 import ResetPassword from './pages/customer/ResetPassword';
 import ShippingPolicy from './pages/ShippingPolicy';
 import ReturnsExchanges from './pages/ReturnsExchanges';
+// import SEOOptimizationGuide from './pages/SEOOptimizationGuide';
 
 function App() {
-  // ✅ UPDATE THIS: Persist completion state
-  const [completed, setCompleted] = useState(() => {
-    const saved = localStorage.getItem('checkoutCompleted');
-    return saved ? JSON.parse(saved) : {};
-  });
+  const [completed, setCompleted] = useState({});
 
-  // ✅ ADD THIS: Save to localStorage when it changes
-  useEffect(() => {
-    localStorage.setItem('checkoutCompleted', JSON.stringify(completed));
-  }, [completed]);
-
-  // ✅ ADD THIS: Clear completion state when order is successful
   useEffect(() => {
     const handleOrderSuccess = () => {
       setCompleted({});
-      localStorage.removeItem('checkoutCompleted');
     };
 
     window.addEventListener('orderSuccess', handleOrderSuccess);
     return () => window.removeEventListener('orderSuccess', handleOrderSuccess);
   }, []);
+
   return (
     <Provider store={store}>
       <Router>
@@ -57,6 +48,7 @@ function App() {
           <main className="flex-1">
             <Routes>
               <Route path="/" element={<Home />} />
+              {/* <Route path='/guide' element={<SEOOptimizationGuide />} /> */}
               <Route path="/products" element={<Products />} />
               <Route path="/products/:slug" element={<ProductDetails />} />
               <Route path="/about" element={<About />} />

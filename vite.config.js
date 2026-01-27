@@ -7,21 +7,21 @@ import sitemap from 'vite-plugin-sitemap'
 // Dynamic routes for sitemap generation
 const dynamicRoutes = async () => {
   // Fetch from your API at build time
-  const API_URL = process.env.VITE_API_URL || 'https://shop-backend-9dtg.onrender.com';
+  const API_URL = process.env.VITE_API_URL || 'https://shop.nerdwaretechnologies.com/api';
   
   try {
     // Fetch products
-    const productsRes = await fetch(`${API_URL}/api/products/?page_size=1000`);
+    const productsRes = await fetch(`${API_URL}/products/?page_size=1000`);
     const productsData = await productsRes.json();
     const productRoutes = productsData.results?.map(p => `/products/${p.slug}`) || [];
     
     // Fetch categories
-    const categoriesRes = await fetch(`${API_URL}/api/categories/`);
+    const categoriesRes = await fetch(`${API_URL}/categories/`);
     const categoriesData = await categoriesRes.json();
     const categoryRoutes = categoriesData.results?.map(c => `/products?category=${c.slug}`) || [];
     
     // Fetch brands
-    const brandsRes = await fetch(`${API_URL}/api/brands/`);
+    const brandsRes = await fetch(`${API_URL}/brands/`);
     const brandsData = await brandsRes.json();
     const brandRoutes = brandsData.results?.map(b => `/products?brand=${b.slug}`) || [];
     

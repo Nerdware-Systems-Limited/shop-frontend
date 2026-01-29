@@ -361,7 +361,7 @@ function Profile() {
                       { id: 'security', icon: Shield, label: 'Security' },
                       { id: 'addresses', icon: MapPin, label: `Addresses (${addresses?.results?.length || 0})` },
                       { id: 'orders', icon: Package, label: 'Order History' },
-                      { id: 'notifications', icon: Bell, label: 'Notifications' },
+                      // { id: 'notifications', icon: Bell, label: 'Notifications' },
                     ].map((item) => (
                       <Button
                         key={item.id}

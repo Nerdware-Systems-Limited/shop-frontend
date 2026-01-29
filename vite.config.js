@@ -13,7 +13,7 @@ const dynamicRoutes = async () => {
     // Fetch products
     const productsRes = await fetch(`${API_URL}/products/?page_size=1000`);
     const productsData = await productsRes.json();
-    const productRoutes = productsData.results?.map(p => `/products/${p.slug}`) || [];
+    const productRoutes = productsData.results?.map(p => `/product/${p.slug}`) || [];
     
     // Fetch categories
     const categoriesRes = await fetch(`${API_URL}/categories/`);

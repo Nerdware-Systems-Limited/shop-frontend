@@ -110,7 +110,7 @@ const BrandCatalog = () => {
 
   // Navigate to product detail
   const handleProductClick = (productSlug) => {
-    navigate(`/products/${productSlug}`);
+    navigate(`/product/${productSlug}`);
   };
 
   // Navigate to brand detail if clicking brand name/logo

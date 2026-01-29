@@ -379,7 +379,7 @@ const OrderDetails = () => {
                 <div className="space-y-4">
                   {order.items?.map((item) => (
                     <div key={item.id} className="flex gap-4 pb-4 border-b border-gray-200 last:border-0">
-                      <Link to={`/products/${item.product?.slug}`}>
+                      <Link to={`/product/${item.product?.slug}`}>
                       <div className="h-20 w-20 bg-gray-100 rounded-lg flex items-center justify-center flex-shrink-0">
                         {item.product?.primary_image ? (
                           <img 

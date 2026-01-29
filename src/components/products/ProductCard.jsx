@@ -13,7 +13,7 @@ const ProductCard = ({ product }) => {
 
   return (
     <div className="group relative flex flex-col h-full">
-      <Link to={`/products/${product.slug}`} className="flex-1 flex flex-col">
+      <Link to={`/product/${product.slug}`} className="flex-1 flex flex-col">
         {/* Image Container - Properly centered and contained */}
         <div className="relative aspect-[3/4] overflow-hidden mb-3">
           <img

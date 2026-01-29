@@ -11,17 +11,17 @@ function Payment({ setCompleted, completed }) {
     const navigate = useNavigate()
     const dispatch = useDispatch()
 
-    const [paymentMethod, setPaymentMethod] = useState('MPesa')
+    const [paymentMethod, setPaymentMethod] = useState('OnDelivery')
     const [mpesaNumber, setMpesaNumber] = useState("");
 
     const paymentOptions = [
-        {
-            id: 'MPesa',
-            label: 'M-Pesa',
-            description: 'Pay securely with M-Pesa mobile money',
-            icon: Wallet,
-            recommended: true
-        },
+        // {
+        //     id: 'MPesa',
+        //     label: 'M-Pesa',
+        //     description: 'Pay securely with M-Pesa mobile money',
+        //     icon: Wallet,
+        //     recommended: true
+        // },
         {
             id: 'OnDelivery',
             label: 'Cash on Delivery',

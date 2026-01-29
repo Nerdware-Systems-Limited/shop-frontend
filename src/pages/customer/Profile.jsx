@@ -44,8 +44,12 @@ const profileSchema = z.object({
   first_name: z.string().min(2, 'First name must be at least 2 characters'),
   last_name: z.string().min(2, 'Last name must be at least 2 characters'),
   email: z.string().email('Invalid email address'),
-  phone: z.string().optional(),
-  date_of_birth: z.string().optional(),
+  phone: z
+    .string()
+    .min(1, 'Phone number is required'),
+  date_of_birth: z
+    .string()
+    .min(1, 'Date of birth is required'),
 });
 
 // Password Change Schema

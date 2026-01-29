@@ -5,9 +5,9 @@ const Contact = () => (
       <div className="border border-black p-6 space-y-4">
         <h2 className="text-xs uppercase tracking-widest font-medium">Get in Touch</h2>
         <div className="space-y-2 text-xs text-gray-600">
-          <p>Email: info@soundsltd.com</p>
-          <p>Phone: +254 (0) 700 000 000</p>
-          <p>Address: Nairobi, Kenya</p>
+          <p>Email: info@soundwaveaudio.co.ke</p>
+          <p>Phone: +254 (0) 724 013 583</p>
+          <p>Address: Park Road Business Center, Ring Road, Ngara, Nairobi, Kenya</p>
         </div>
       </div>
       

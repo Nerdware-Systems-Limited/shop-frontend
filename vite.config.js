@@ -18,12 +18,12 @@ const dynamicRoutes = async () => {
     // Fetch categories
     const categoriesRes = await fetch(`${API_URL}/categories/`);
     const categoriesData = await categoriesRes.json();
-    const categoryRoutes = categoriesData.results?.map(c => `/products?category=${c.slug}`) || [];
+    const categoryRoutes = categoriesData.results?.map(c => `/products/c.slug}`) || [];
     
     // Fetch brands
     const brandsRes = await fetch(`${API_URL}/brands/`);
     const brandsData = await brandsRes.json();
-    const brandRoutes = brandsData.results?.map(b => `/products?brand=${b.slug}`) || [];
+    const brandRoutes = brandsData.results?.map(b => `/products/brand/${b.slug}`) || [];
     
     return [...productRoutes, ...categoryRoutes, ...brandRoutes];
   } catch (error) {

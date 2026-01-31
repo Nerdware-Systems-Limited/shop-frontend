@@ -1,26 +1,41 @@
 import { useEffect, useState } from 'react';
 import { useDispatch, useSelector } from 'react-redux';
-import { useSearchParams } from 'react-router-dom';
+import { useSearchParams, useParams, useNavigate  } from 'react-router-dom';
 import { listProducts, setFilters, clearFilters } from '../actions/productActions';
 import ProductGrid from '../components/products/ProductGrid';
 import FilterSidebar from '../components/products/FilterSidebar';
 import { SlidersHorizontal, ChevronLeft, ChevronRight } from 'lucide-react';
+import CategoryBrandSEO from '../components/products/CategoryBrandSEO';
 
 const Products = () => {
   const dispatch = useDispatch();
+  const navigate = useNavigate();
   const [searchParams, setSearchParams] = useSearchParams();
   const { products, loading, error, count, next, previous } = useSelector((state) => state.productList);
+  const { categories } = useSelector((state) => state.categoryList);
+  const { brands } = useSelector((state) => state.brandList);
   const filters = useSelector((state) => state.filters);
 
   const [mobileFilterOpen, setMobileFilterOpen] = useState(false);
   const [sortBy, setSortBy] = useState('');
   const [currentPage, setCurrentPage] = useState(1);
+  const { categorySlug, brandSlug } = useParams();
+
+  // Extract lists safely
+const categoriesList = Array.isArray(categories?.results) ? categories.results : 
+                       Array.isArray(categories) ? categories : [];
+const brandsList = Array.isArray(brands?.results) ? brands.results : 
+                   Array.isArray(brands) ? brands : [];
+
+// Find current category/brand objects
+const currentCategory = categorySlug ? categoriesList.find(c => c.slug === categorySlug) : null;
+const currentBrand = brandSlug ? brandsList.find(b => b.slug === brandSlug) : null;
 
 
   useEffect(() => {
     const params = {
-      category: searchParams.get('category') || filters.category,
-      brand: searchParams.get('brand') || filters.brand,
+      category: categorySlug || filters.category,
+      brand: brandSlug  || filters.brand,
       min_price: filters.minPrice || 0,
       max_price: filters.maxPrice || 1000000,
       in_stock: filters.inStock,
@@ -30,9 +45,36 @@ const Products = () => {
     };
 
     dispatch(listProducts(params));
-  }, [dispatch, filters, sortBy, searchParams]);
+  }, [dispatch, categorySlug, brandSlug, filters, sortBy, searchParams]);
 
   const handleFilterChange = (newFilters) => {
+    // Get current values
+    const currentCategory = categorySlug || filters.category;
+    const currentBrand = brandSlug || filters.brand;
+    
+    // Check if category or brand changed
+    if (newFilters.category !== currentCategory || newFilters.brand !== currentBrand) {
+      // Build new path
+      let newPath = '/products';
+      
+      if (newFilters.category && newFilters.brand) {
+        // Both filters - category in path, brand in query
+        newPath = `/products/${newFilters.category}`;
+        const params = new URLSearchParams(searchParams);
+        params.set('brand', newFilters.brand);
+        navigate(`${newPath}?${params.toString()}`);
+      } else if (newFilters.category) {
+        // Only category
+        navigate(`/products/${newFilters.category}`);
+      } else if (newFilters.brand) {
+        // Only brand
+        navigate(`/products/brand/${newFilters.brand}`);
+      } else {
+        // No filters
+        navigate('/products');
+      }
+    }
+    
     dispatch(setFilters(newFilters));
     setCurrentPage(1);
   };
@@ -42,6 +84,7 @@ const Products = () => {
     setSearchParams({});
     setSortBy('');
     setCurrentPage(1);
+    navigate('/products');
   };
 
   const handleSortChange = (value) => {
@@ -93,16 +136,40 @@ const Products = () => {
     { label: 'Name: Z to A', value: '-name' },
   ];
 
+  const getPageTitle = () => {
+    if (categorySlug) {
+      return categorySlug.split('-').map(word => 
+        word.charAt(0).toUpperCase() + word.slice(1)
+      ).join(' ');
+    }
+    if (brandSlug) {
+      return brandSlug.split('-').map(word => 
+        word.charAt(0).toUpperCase() + word.slice(1)
+      ).join(' ');
+    }
+    return 'Products';
+  };
+
 
   return (
     <div className="min-h-screen">
+      {/* SEO Component */}
+      <CategoryBrandSEO
+        categorySlug={categorySlug}
+        brandSlug={brandSlug}
+        category={currentCategory}
+        brand={currentBrand}
+        productCount={count || products.length}
+        siteName="Sound Wave Audio"
+        siteUrl="https://soundwaveaudio.co.ke"
+      />
       {/* Page Header */}
       <div className="border-b border-black bg-white sticky top-16 z-40">
         <div className="max-w-7xl mx-auto px-4 py-6">
           <div className="flex items-center justify-between">
             <div>
               <h1 className="text-2xl md:text-3xl font-light tracking-[0.2em] uppercase mb-2">
-                Products
+                {getPageTitle()}
               </h1>
               <p className="text-xs text-gray-600">
                 {products.length || 0} total {products.length === 1 ? 'item' : 'items'}

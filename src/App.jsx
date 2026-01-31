@@ -26,7 +26,7 @@ import PrivacyPolicy from './pages/PrivacyPolicy';
 import ResetPassword from './pages/customer/ResetPassword';
 import ShippingPolicy from './pages/ShippingPolicy';
 import ReturnsExchanges from './pages/ReturnsExchanges';
-// import SEOOptimizationGuide from './pages/SEOOptimizationGuide';
+import DefaultSEO from './pages/DefaultSEO';
 
 function App() {
   const [completed, setCompleted] = useState({});
@@ -47,28 +47,81 @@ function App() {
           <Header />
           <main className="flex-1">
             <Routes>
-              <Route path="/" element={<Home />} />
+              <Route path="/" element={
+                <>
+                <DefaultSEO />
+                <Home />
+                </>} />
               {/* <Route path='/guide' element={<SEOOptimizationGuide />} /> */}
-              <Route path="/products" element={<Products />} />
+              {/* Products routes - path-based navigation */}
+              <Route path="/products">
+                <Route index element={<Products />} />
+                <Route path="brand/:brandSlug" element={<Products />} />
+                <Route path=":categorySlug" element={<Products />} />
+              </Route>
               <Route path="/product/:slug" element={<ProductDetails />} />
-              <Route path="/about" element={<About />} />
-              <Route path="/contact" element={<Contact />} />
-              <Route path="/cart" element={<Cart />} />
-              <Route path="/login" element={<Login />} />
+              <Route path="/about" element={
+                 <>
+                  <DefaultSEO />
+                  <About />
+                </>
+              } />
+              <Route path="/contact" element={
+                <>
+                  <DefaultSEO />
+                  <Contact />
+                </>
+              } />
+              <Route path="/cart" element={
+                <>
+                  <DefaultSEO />
+                  <Cart />
+                </>} />
+              <Route path="/login" element={
+                <>
+                <DefaultSEO />
+                <Login />
+                </>
+                } />
               <Route path='forgot-password' element={<ForgotPassword />} />
               <Route path='reset-password' element={<ResetPassword />} />
               <Route path="/profile" element={<Profile />} />
-              <Route path="/register" element={<Register />} />
+              <Route path="/register" element={
+                <>
+                <DefaultSEO />
+                <Register />
+                </>
+                } />
               <Route path="/shipping" element={<Shipping setCompleted={setCompleted} completed={completed} />} />
               <Route path="/payment" element={<Payment setCompleted={setCompleted} completed={completed}/>} />
               <Route path="/placeorder" element={<PlaceOrder setCompleted={setCompleted} completed={completed}/>} />
               <Route path="/myorders" element={<MyOrders />} />
               <Route path="/order/:id" element={<OrderDetails />} />
               <Route path="/order/:orderNumber/success" element={<OrderSuccess />} />
-              <Route path="/terms" element={<TermsOfService />} />
-              <Route path="/privacy" element={<PrivacyPolicy />} />
-              <Route path="/shipping-policy" element={<ShippingPolicy />} />
-              <Route path="/returns" element={<ReturnsExchanges />} />  
+              <Route path="/terms" element={
+                <>
+                <DefaultSEO />
+                <TermsOfService />
+                </>
+                } />
+              <Route path="/privacy" element={
+                <>
+                <DefaultSEO />
+                <PrivacyPolicy />
+                </>
+                } />
+              <Route path="/shipping-policy" element={
+                <>
+                <DefaultSEO />
+                <ShippingPolicy />
+                </>
+                } />
+              <Route path="/returns" element={
+                <>
+                <DefaultSEO />
+                <ReturnsExchanges />
+                </>
+                } />  
               <Route path="*" element={<NotFound />} />
             </Routes>
           </main>

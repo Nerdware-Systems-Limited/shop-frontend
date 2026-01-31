@@ -333,7 +333,7 @@ const ProductDetails = () => {
               </Link>
               <ChevronRight className="w-2.5 h-2.5 sm:w-3 sm:h-3 flex-shrink-0" />
               <Link 
-                to={`/products?category=${product.category?.slug}`} 
+                to={`/products/${product.category?.slug}`} 
                 className="hover:opacity-60 transition-opacity uppercase tracking-widest whitespace-nowrap"
               >
                 {product.category?.name}

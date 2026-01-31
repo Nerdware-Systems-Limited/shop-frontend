@@ -1,36 +1,94 @@
 import { useState, useEffect } from 'react';
+import { useLocation } from 'react-router-dom';
 import { Flame, MapPin, Phone, Mail, ChevronRight, Sparkles } from 'lucide-react';
 
+const promosData = [
+  {
+    id: 1,
+    routes: ['/', '/category/audio'],
+    text: "Hot Deals! Up to 50% off on selected audio gear",
+    highlight: "Limited Time Offer",
+    startDate: '2026-01-31',
+    endDate: '2026-02-05',
+    icon: Sparkles,
+  },
+  {
+    id: 2,
+    routes: ['/'],
+    text: "Car Stereo Dealer in Nairobi - Sound Wave Audio",
+    highlight: "Premium Audio Systems",
+    startDate: '2026-01-31',
+    endDate: '2026-12-31',
+    icon: Flame,
+  }
+];
+
 const PromoBanner = () => {
+  const location = useLocation();
   const [currentPromo, setCurrentPromo] = useState(0);
   const [isVisible, setIsVisible] = useState(true);
+  const [isPaused, setIsPaused] = useState(false);
 
-  const promos = [
-    {
-      icon: Flame,
-      text: "Car Stereo Dealer in Nairobi - Sound Wave Audio",
-      highlight: "Premium Audio Systems"
-    },
-    {
-      icon: Sparkles,
-      text: "Hot Deals! Up to 50% off on selected audio gear",
-      highlight: "Limited Time Offer"
-    }
-  ];
+  // Filter promos by route & date
+  const filteredPromos = promosData.filter(p => {
+    const now = new Date();
+    return (
+      p.routes.includes(location.pathname) &&
+      now >= new Date(p.startDate) &&
+      now <= new Date(p.endDate)
+    );
+  });
 
+  const promo = filteredPromos[currentPromo];
+  const CurrentIcon = promo?.icon;
+
+  // Check if user dismissed
   useEffect(() => {
+    if (!promo) return;
+    const dismissed = localStorage.getItem(`promoDismissed_${promo.id}`);
+    if (dismissed) {
+      const now = Date.now();
+      const expiry = 7 * 24 * 60 * 60 * 1000; // 7 days
+      if (now - parseInt(dismissed) < expiry) {
+        setIsVisible(false);
+      } else {
+        localStorage.removeItem(`promoDismissed_${promo.id}`);
+        setIsVisible(true);
+      }
+    }
+  }, [promo]);
+
+  // Rotation
+  useEffect(() => {
+    if (!promo || filteredPromos.length <= 1 || isPaused) return;
     const interval = setInterval(() => {
-      setCurrentPromo((prev) => (prev + 1) % promos.length);
+      setCurrentPromo(prev => (prev + 1) % filteredPromos.length);
     }, 5000);
     return () => clearInterval(interval);
-  }, []);
+  }, [filteredPromos, isPaused, promo]);
 
-  if (!isVisible) return null;
+  // Session frequency capping
+  useEffect(() => {
+    if (!promo) return;
+    if (!sessionStorage.getItem(`promoViewed_${promo.id}`)) {
+      sessionStorage.setItem(`promoViewed_${promo.id}`, 'true');
+    }
+  }, [promo]);
 
-  const CurrentIcon = promos[currentPromo].icon;
+  const handleClose = () => {
+    setIsVisible(false);
+    if (promo) localStorage.setItem(`promoDismissed_${promo.id}`, Date.now());
+  };
+
+  if (!isVisible || filteredPromos.length === 0) return null;
 
   return (
-    <div className="relative overflow-hidden bg-gradient-to-r from-orange-950 via-red-950 to-orange-950">
+    <div
+      className="relative overflow-hidden bg-gradient-to-r from-orange-950 via-red-950 to-orange-950"
+      onMouseEnter={() => setIsPaused(true)}
+      onMouseLeave={() => setIsPaused(false)}
+      aria-live="polite"
+    >
       {/* Animated background pattern */}
       <div className="absolute inset-0 opacity-10">
         <div className="absolute inset-0 bg-[radial-gradient(circle_at_50%_120%,rgba(255,100,50,0.3),transparent_50%)]" />
@@ -64,23 +122,25 @@ const PromoBanner = () => {
           </div>
 
           {/* Center - Main promo with animation */}
-          <div className="flex-1 lg:flex-initial flex items-center justify-center space-x-3 min-w-0">
-            <div className="relative">
-              <CurrentIcon className="w-5 h-5 text-orange-400 animate-pulse" />
-              <div className="absolute inset-0 bg-orange-500 blur-md opacity-50 animate-pulse" />
-            </div>
-            
-            <div className="flex flex-col items-center">
-              <p className="text-sm lg:text-base font-bold text-transparent bg-clip-text bg-gradient-to-r from-orange-200 via-orange-100 to-orange-200 whitespace-nowrap animate-[glow_2s_ease-in-out_infinite]">
-                {promos[currentPromo].text}
-              </p>
-              <span className="text-[10px] text-orange-400 font-semibold tracking-wider uppercase">
-                {promos[currentPromo].highlight}
-              </span>
-            </div>
+          {promo && (
+            <div className="flex-1 lg:flex-initial flex items-center justify-center space-x-3 min-w-0">
+              <div className="relative">
+                <CurrentIcon className="w-5 h-5 text-orange-400 animate-pulse" />
+                <div className="absolute inset-0 bg-orange-500 blur-md opacity-50 animate-pulse" />
+              </div>
+              
+              <div className="flex flex-col items-center">
+                <p className="text-sm lg:text-base font-bold text-transparent bg-clip-text bg-gradient-to-r from-orange-200 via-orange-100 to-orange-200 whitespace-nowrap animate-[glow_2s_ease-in-out_infinite]">
+                  {promo.text}
+                </p>
+                <span className="text-[10px] text-orange-400 font-semibold tracking-wider uppercase">
+                  {promo.highlight}
+                </span>
+              </div>
 
-            <ChevronRight className="w-4 h-4 text-orange-400 animate-[bounce-x_1s_ease-in-out_infinite]" />
-          </div>
+              <ChevronRight className="w-4 h-4 text-orange-400 animate-[bounce-x_1s_ease-in-out_infinite]" />
+            </div>
+          )}
 
           {/* Right side - Email */}
           <div className="hidden lg:flex items-center">
@@ -95,7 +155,7 @@ const PromoBanner = () => {
 
           {/* Close button */}
           <button
-            onClick={() => setIsVisible(false)}
+            onClick={handleClose}
             className="ml-4 p-1 hover:bg-orange-900/50 rounded transition-colors"
             aria-label="Close banner"
           >
@@ -108,14 +168,12 @@ const PromoBanner = () => {
 
       {/* Progress indicator dots */}
       <div className="absolute bottom-0 left-1/2 -translate-x-1/2 flex space-x-1.5 pb-1">
-        {promos.map((_, idx) => (
+        {filteredPromos.map((_, idx) => (
           <button
             key={idx}
             onClick={() => setCurrentPromo(idx)}
             className={`w-1.5 h-1.5 rounded-full transition-all duration-300 ${
-              idx === currentPromo 
-                ? 'bg-orange-400 w-4' 
-                : 'bg-orange-700/50 hover:bg-orange-600/50'
+              idx === currentPromo ? 'bg-orange-400 w-4' : 'bg-orange-700/50 hover:bg-orange-600/50'
             }`}
             aria-label={`Show promo ${idx + 1}`}
           />

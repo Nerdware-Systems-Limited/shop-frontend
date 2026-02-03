@@ -5,7 +5,7 @@ import {
 } from 'react-head';
 
 /**
- * God-Level Product SEO Component
+ * Product SEO Component
  * - Comprehensive title, meta, OG, Twitter Cards
  * - Robust fallbacks for all fields
  * - Enhanced JSON-LD schema with reviews, variants, and breadcrumbs

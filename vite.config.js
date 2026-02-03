@@ -18,7 +18,7 @@ const dynamicRoutes = async () => {
     // Fetch categories
     const categoriesRes = await fetch(`${API_URL}/categories/`);
     const categoriesData = await categoriesRes.json();
-    const categoryRoutes = categoriesData.results?.map(c => `/products/c.slug}`) || [];
+    const categoryRoutes = categoriesData.results?.map(c => `/products/${c.slug}`) || [];
     
     // Fetch brands
     const brandsRes = await fetch(`${API_URL}/brands/`);
@@ -60,6 +60,12 @@ export default defineConfig(async () => {
           '/products': { priority: 0.9, changefreq: 'daily' },
           '/about': { priority: 0.8, changefreq: 'monthly' },
           '/contact': { priority: 0.8, changefreq: 'monthly' },
+          // Dynamic product pages with higher priority
+          ...Object.fromEntries(
+            routes.filter(r => r.startsWith('/product/')).map(r => 
+              [r, { priority: 0.8, changefreq: 'weekly' }]
+            )
+          ),
         }
       })
     ],

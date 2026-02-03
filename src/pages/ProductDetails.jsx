@@ -299,7 +299,7 @@ const ProductDetails = () => {
   const primaryImage = product.images?.find(img => img.is_primary) || product.images?.[0];
   const mainImageUrl = getImageUrl(primaryImage);
 
-  console.log(product)
+  // console.log(product)
 
   return (
     <>

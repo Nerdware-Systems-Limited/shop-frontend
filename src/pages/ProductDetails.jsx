@@ -1,7 +1,7 @@
 import { useEffect, useState, useMemo, useRef } from 'react';
 import { useParams, Link, useNavigate } from 'react-router-dom';
 import { useDispatch, useSelector } from 'react-redux';
-import { getProductDetails } from '../actions/productActions';
+import { getProductDetails, incrementProductView } from '../actions/productActions';
 import { ChevronRight, Star, Truck, Shield, Package, Share2, Heart, AlertCircle, Check, ZoomIn } from 'lucide-react';
 import ProductImageGallery from '../components/products/ProductImageGallery';
 import ProductSpecifications from '../components/products/ProductSpecifications';
@@ -27,7 +27,14 @@ const ProductDetails = () => {
   useEffect(() => {
     dispatch(getProductDetails(slug));
     window.scrollTo(0, 0);
+    // Track view after a short delay to avoid bots/accidental clicks
+    const timer = setTimeout(() => {
+      dispatch(incrementProductView(slug));
+    }, 2000); // 2 second delay
+    
+    return () => clearTimeout(timer);
   }, [dispatch, slug]);
+
 
   // Enhanced price formatting with proper KES symbol
   const formatPrice = (price) => {
@@ -520,7 +527,7 @@ const ProductDetails = () => {
               )}
 
               {/* Weight and Dimensions */}
-              {(product.weight || product.dimensions) && (
+              {(product.weight || product.dimensions?.length) && (
                 <div className="grid grid-cols-2 gap-3 p-4 bg-gray-50 border border-gray-200">
                   {product.weight && (
                     <div>
@@ -533,7 +540,7 @@ const ProductDetails = () => {
                     </div>
                   )}
                   
-                  {product.dimensions && (
+                  {product.dimensions?.length && (
                     <div>
                       <p className="text-[9px] sm:text-[10px] uppercase tracking-widest text-gray-500 mb-1">
                         Dimensions

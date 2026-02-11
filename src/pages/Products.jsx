@@ -21,15 +21,16 @@ const Products = () => {
   const [currentPage, setCurrentPage] = useState(1);
   const { categorySlug, brandSlug } = useParams();
 
-  // Extract lists safely
-const categoriesList = Array.isArray(categories?.results) ? categories.results : 
-                       Array.isArray(categories) ? categories : [];
-const brandsList = Array.isArray(brands?.results) ? brands.results : 
-                   Array.isArray(brands) ? brands : [];
 
-// Find current category/brand objects
-const currentCategory = categorySlug ? categoriesList.find(c => c.slug === categorySlug) : null;
-const currentBrand = brandSlug ? brandsList.find(b => b.slug === brandSlug) : null;
+  // Extract lists safely
+  const categoriesList = Array.isArray(categories?.results) ? categories.results : 
+                        Array.isArray(categories) ? categories : [];
+  const brandsList = Array.isArray(brands?.results) ? brands.results : 
+                    Array.isArray(brands) ? brands : [];
+  window.scrollTo(0, 0);
+  // Find current category/brand objects
+  const currentCategory = categorySlug ? categoriesList.find(c => c.slug === categorySlug) : null;
+  const currentBrand = brandSlug ? brandsList.find(b => b.slug === brandSlug) : null;
 
 
   useEffect(() => {

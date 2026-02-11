@@ -221,7 +221,7 @@ const Cart = () => {
                     <span className="text-gray-300">•</span>
                     <span className="flex items-center gap-2 text-sm text-green-600 font-medium">
                       <TrendingUp className="w-4 h-4" />
-                      Saving Ksh {totalDiscount.toLocaleString()}
+                      Saving Ksh {totalDiscount}
                     </span>
                   </>
                 )}
@@ -309,16 +309,16 @@ const Cart = () => {
                     <div className="mb-4">
                       <div className="flex items-center gap-3 flex-wrap">
                         <span className="text-3xl font-bold text-gray-900">
-                          Ksh {item.price.toLocaleString()}
+                          Ksh {item.price}
                         </span>
                         {item.discount > 0 && (
                           <>
                             <span className="text-lg text-gray-400 line-through">
-                              Ksh {item.originalPrice.toLocaleString()}
+                              Ksh {item.originalPrice}
                             </span>
                             <span className="bg-gradient-to-r from-green-100 to-emerald-100 text-green-800 text-xs px-3 py-1.5 rounded-full flex items-center gap-1 font-semibold">
                               <Tag className="w-3 h-3" />
-                              Save Ksh {((item.originalPrice - item.price) * item.qty).toLocaleString()}
+                              Save Ksh {((item.originalPrice - item.price) * item.qty)}
                             </span>
                           </>
                         )}
@@ -352,7 +352,7 @@ const Cart = () => {
                       <div className="text-right">
                         <p className="text-xs text-gray-500 mb-1 uppercase tracking-wider">Subtotal</p>
                         <p className="text-2xl font-bold text-gray-900">
-                          Ksh {(item.price * item.qty).toLocaleString()}
+                          Ksh {(item.price * item.qty)}
                         </p>
                       </div>
                     </div>
@@ -399,7 +399,7 @@ const Cart = () => {
                         Almost there!
                       </p>
                       <p className="text-xs text-blue-700">
-                        Add <span className="font-bold">Ksh {(5000 - itemsPrice).toLocaleString()}</span> more for FREE shipping
+                        Add <span className="font-bold">Ksh {(5000 - itemsPrice)}</span> more for FREE shipping
                       </p>
                     </div>
                   </div>
@@ -427,7 +427,7 @@ const Cart = () => {
               <div className="space-y-4 mb-6 py-4">
                 <div className="flex justify-between text-sm">
                   <span className="text-gray-600">Subtotal ({totalItems} items)</span>
-                  <span className="font-semibold text-gray-900">Ksh {itemsPrice.toLocaleString()}</span>
+                  <span className="font-semibold text-gray-900">Ksh {itemsPrice}</span>
                 </div>
 
                 {totalDiscount > 0 && (
@@ -436,7 +436,7 @@ const Cart = () => {
                       <Tag className="w-4 h-4" />
                       Discount Savings
                     </span>
-                    <span className="font-bold text-green-600">-Ksh {totalDiscount.toLocaleString()}</span>
+                    <span className="font-bold text-green-600">-Ksh {totalDiscount}</span>
                   </div>
                 )}
 
@@ -449,25 +449,25 @@ const Cart = () => {
                     {shippingPrice === 0 ? (
                       <span className="text-green-600 font-bold">FREE</span>
                     ) : (
-                      <span className="text-gray-900">Ksh {shippingPrice.toLocaleString()}</span>
+                      <span className="text-gray-900">Ksh {shippingPrice}</span>
                     )}
                   </span>
                 </div>
 
                 <div className="flex justify-between text-sm">
                   <span className="text-gray-600">Tax (16% VAT)</span>
-                  <span className="font-semibold text-gray-900">Ksh {taxPrice.toLocaleString()}</span>
+                  <span className="font-semibold text-gray-900">Ksh {taxPrice}</span>
                 </div>
 
                 <div className="border-t-2 border-gray-200 pt-4 flex justify-between items-center">
                   <span className="text-lg font-bold text-gray-900">Total</span>
                   <div className="text-right">
                     <span className="text-3xl font-bold text-gray-900">
-                      Ksh {totalPrice.toLocaleString()}
+                      Ksh {totalPrice}
                     </span>
                     {totalDiscount > 0 && (
                       <p className="text-xs text-green-600 font-medium mt-1">
-                        You saved Ksh {totalDiscount.toLocaleString()}
+                        You saved Ksh {totalDiscount}
                       </p>
                     )}
                   </div>

@@ -10,14 +10,18 @@
     <link rel="dns-prefetch" href="https://fonts.googleapis.com" />
     <link rel="dns-prefetch" href="https://fonts.gstatic.com" />
     <link rel="dns-prefetch" href="https://cdnjs.cloudflare.com" />
+    <link rel="dns-prefetch" href="https://kiarie-bucket.s3.amazonaws.com" />
     <link rel="preconnect" href="https://fonts.googleapis.com" crossorigin />
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link rel="preconnect" href="https://kiarie-bucket.s3.amazonaws.com" />
     
     <!-- Preload Critical Assets -->
     <link rel="preload" href="/src/main.jsx" as="script" crossorigin />
     <link rel="preload" href="https://fonts.googleapis.com/css2?family=Manrope:wght@200;300;400;500;600;700;800&display=swap" as="style" />
 
     <!-- ==================== CORE SEO META TAGS ==================== -->
+    <!-- NOTE: Dynamic meta tags (title, description, OG, etc.) are managed by react-head in components -->
+    <!-- Only static/global meta tags remain here -->
     <meta name="author" content="Sound Wave Audio" />
     <meta name="google-site-verification" content="dsAO8AGRcPATu-8LaOdSMLbEHHJUVM-nGNnIdT-2inI" />
 
@@ -28,19 +32,19 @@
     <meta name="ICBM" content="-1.2921, 36.8219" />
     
     <!-- ==================== FAVICON & ICONS ==================== -->
-    <link rel="apple-touch-icon-precomposed" sizes="57x57" href="apple-touch-icon-57x57.png" />
-    <link rel="apple-touch-icon-precomposed" sizes="114x114" href="apple-touch-icon-114x114.png" />
-    <link rel="apple-touch-icon-precomposed" sizes="72x72" href="apple-touch-icon-72x72.png" />
-    <link rel="apple-touch-icon-precomposed" sizes="144x144" href="apple-touch-icon-144x144.png" />
-    <link rel="apple-touch-icon-precomposed" sizes="60x60" href="apple-touch-icon-60x60.png" />
-    <link rel="apple-touch-icon-precomposed" sizes="120x120" href="apple-touch-icon-120x120.png" />
-    <link rel="apple-touch-icon-precomposed" sizes="76x76" href="apple-touch-icon-76x76.png" />
-    <link rel="apple-touch-icon-precomposed" sizes="152x152" href="apple-touch-icon-152x152.png" />
-    <link rel="icon" type="image/png" href="favicon-196x196.png" sizes="196x196" />
-    <link rel="icon" type="image/png" href="favicon-96x96.png" sizes="96x96" />
-    <link rel="icon" type="image/png" href="favicon-32x32.png" sizes="32x32" />
-    <link rel="icon" type="image/png" href="favicon-16x16.png" sizes="16x16" />
-    <link rel="icon" type="image/png" href="favicon-128.png" sizes="128x128" />
+    <link rel="apple-touch-icon-precomposed" sizes="57x57" href="/apple-touch-icon-57x57.png" />
+    <link rel="apple-touch-icon-precomposed" sizes="114x114" href="/apple-touch-icon-114x114.png" />
+    <link rel="apple-touch-icon-precomposed" sizes="72x72" href="/apple-touch-icon-72x72.png" />
+    <link rel="apple-touch-icon-precomposed" sizes="144x144" href="/apple-touch-icon-144x144.png" />
+    <link rel="apple-touch-icon-precomposed" sizes="60x60" href="/apple-touch-icon-60x60.png" />
+    <link rel="apple-touch-icon-precomposed" sizes="120x120" href="/apple-touch-icon-120x120.png" />
+    <link rel="apple-touch-icon-precomposed" sizes="76x76" href="/apple-touch-icon-76x76.png" />
+    <link rel="apple-touch-icon-precomposed" sizes="152x152" href="/apple-touch-icon-152x152.png" />
+    <link rel="icon" type="image/png" href="/favicon-196x196.png" sizes="196x196" />
+    <link rel="icon" type="image/png" href="/favicon-96x96.png" sizes="96x96" />
+    <link rel="icon" type="image/png" href="/favicon-32x32.png" sizes="32x32" />
+    <link rel="icon" type="image/png" href="/favicon-16x16.png" sizes="16x16" />
+    <link rel="icon" type="image/png" href="/favicon-128.png" sizes="128x128" />
     <link rel="manifest" href="/site.webmanifest" />
     <meta name="theme-color" content="#000000" />
     <meta name="apple-mobile-web-app-capable" content="yes" />
@@ -50,7 +54,9 @@
     <meta name="msapplication-TileColor" content="#000000" />
     <meta name="msapplication-config" content="/browserconfig.xml" />
 
-    <!-- ==================== STRUCTURED DATA (JSON-LD) ==================== -->
+    <!-- ==================== GLOBAL STRUCTURED DATA (JSON-LD) ==================== -->
+    <!-- NOTE: These are GLOBAL schemas that apply to the entire site -->
+    <!-- Page-specific schemas (Product, BreadcrumbList, etc.) are in components -->
     <script type="application/ld+json">
     {
       "@context": "https://schema.org",
@@ -186,18 +192,6 @@
               }
             ]
           }
-        },
-        {
-          "@type": "BreadcrumbList",
-          "@id": "https://soundwaveaudio.co.ke/#breadcrumb",
-          "itemListElement": [
-            {
-              "@type": "ListItem",
-              "position": 1,
-              "name": "Home",
-              "item": "https://soundwaveaudio.co.ke/"
-            }
-          ]
         }
       ]
     }
@@ -211,9 +205,6 @@
     <meta name="format-detection" content="telephone=yes" />
     <meta name="mobile-web-app-capable" content="yes" />
     <meta name="HandheldFriendly" content="true" />
-
-    <!-- ==================== MICROSOFT CLARITY / ANALYTICS ==================== -->
-    <!-- Add your analytics tracking code here -->
     
     <!-- ==================== PRELOAD FONTS ==================== -->
     <link rel="preload" as="style" href="https://fonts.googleapis.com/css2?family=Manrope:wght@200;300;400;500;600;700;800&display=swap" />
@@ -228,15 +219,13 @@
     <meta name="msapplication-square150x150logo" content="/mstile-150x150.png" />
     <meta name="msapplication-wide310x150logo" content="/mstile-310x150.png" />
     <meta name="msapplication-square310x310logo" content="/mstile-310x310.png" />
+    
     <!-- ==================== BING WEBMASTER TOOLS ==================== -->
     <meta name="msvalidate.01" content="F9EBAC30A3D147993E71412E6A8C9661" />
-    
 
     <!-- ==================== PERFORMANCE HINTS ==================== -->
     <link rel="preconnect" href="https://shop.nerdwaretechnologies.com" crossorigin />
     <link rel="dns-prefetch" href="https://shop.nerdwaretechnologies.com" />
-
-    
     
     <!-- Google tag (gtag.js) -->
     <script async src="https://www.googletagmanager.com/gtag/js?id=G-S5ZY85VW0Q"></script>
@@ -244,16 +233,19 @@
       window.dataLayer = window.dataLayer || [];
       function gtag(){dataLayer.push(arguments);}
       gtag('js', new Date());
-
       gtag('config', 'G-S5ZY85VW0Q');
     </script>
+
+    <!-- ==================== DEFAULT FALLBACK META (will be overridden by react-head) ==================== -->
+    <!-- <title>Sound Wave Audio - Premium Car Audio Systems Nairobi Kenya</title>
+    <meta name="description" content="Shop premium car audio systems at Sound Wave Audio Nairobi. Professional installation of speakers, subwoofers, amplifiers & head units. Free delivery in CBD." /> -->
   </head>
   
   <body>
     <!-- Skip to main content for accessibility -->
-    <!-- <a href="#root" class="sr-only focus:not-sr-only focus:absolute focus:top-4 focus:left-4 focus:z-50 focus:px-4 focus:py-2 focus:bg-black focus:text-white">
+    <a href="#root" class="sr-only focus:not-sr-only focus:absolute focus:top-4 focus:left-4 focus:z-50 focus:px-4 focus:py-2 focus:bg-black focus:text-white">
       Skip to main content
-    </a> -->
+    </a>
     
     <!-- Main Application Mount Point -->
     <div id="root"></div>

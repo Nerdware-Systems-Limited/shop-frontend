@@ -179,21 +179,6 @@ const PromoBanner = () => {
           />
         ))}
       </div>
-
-      <style jsx>{`
-        @keyframes shimmer {
-          0% { transform: translateX(-100%); }
-          100% { transform: translateX(100%); }
-        }
-        @keyframes glow {
-          0%, 100% { opacity: 1; }
-          50% { opacity: 0.8; }
-        }
-        @keyframes bounce-x {
-          0%, 100% { transform: translateX(0); }
-          50% { transform: translateX(4px); }
-        }
-      `}</style>
     </div>
   );
 };

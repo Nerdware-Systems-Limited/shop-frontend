@@ -1,7 +1,7 @@
 import { useEffect, useState } from 'react';
 import { useDispatch, useSelector } from 'react-redux';
 import { Link } from 'react-router-dom';
-import { getFeaturedProducts, listCategories } from '../actions/productActions';
+import { getNewArrivalProducts, getFeaturedProducts, listCategories } from '../actions/productActions';
 import ProductGrid from '../components/products/ProductGrid';
 import { ChevronRight } from 'lucide-react';
 import { Skeleton } from "@/components/ui/skeleton"
@@ -13,9 +13,11 @@ const Home = () => {
   const dispatch = useDispatch();
   const { products: featuredProducts, loading, error } = useSelector((state) => state.featuredProducts);
   const { categories, loading: CategoryLoading } = useSelector((state) => state.categoryList);
+  const { loading: newArrivalProductsloading, products: newArrivalProducts, error: newArrivalProductserror } = useSelector(state => state.newArrivalProducts);
 
   useEffect(() => {
     dispatch(getFeaturedProducts());
+    dispatch(getNewArrivalProducts());
     dispatch(listCategories());
   }, [dispatch]);
 
@@ -51,7 +53,7 @@ const Home = () => {
     <div className="min-h-screen">
       {/* Premium Hero Section */}
       <HeroSection 
-        products={featuredProducts?.results || []}
+        featuredProducts={newArrivalProducts?.results || []}
         loading={loading}
         AddToCartButton={AddToCartButton}
         LinkComponent={Link}
@@ -76,7 +78,7 @@ const Home = () => {
             : randomCategories.map((category) => (
                 <Link
                   key={category.id}
-                  to={`/products?category=${category.slug}`}
+                  to={`/products/${category.slug}`}
                   className="group relative aspect-square border border-black overflow-hidden"
                 >
                   {category.image ? (

@@ -31,26 +31,26 @@ const Footer = () => {
               </li>
               <li>
                 <Link
-                  to="/products?category=portable-speakers"
+                  to="/products/car-speakers"
                   className="text-sm md:text-xs text-zinc-400 hover:text-white transition-colors inline-block"
                 >
-                  Portable Speakers
+                  Car Speakers
                 </Link>
               </li>
               <li>
                 <Link
-                  to="/products?category=home-theater"
+                  to="/products/equalizers"
                   className="text-sm md:text-xs text-zinc-400 hover:text-white transition-colors inline-block"
                 >
-                  Home Theater
+                Equalizers
                 </Link>
               </li>
               <li>
                 <Link
-                  to="/products?on_sale=true"
+                  to="/products/brand/pioneer"
                   className="text-sm md:text-xs text-zinc-400 hover:text-white transition-colors inline-block"
                 >
-                  On Sale
+                  Pioneer
                 </Link>
               </li>
             </ul>
@@ -126,11 +126,23 @@ const Footer = () => {
             <p className="text-xs md:text-[10px] text-zinc-500 uppercase tracking-widest order-2 md:order-1">
               © {new Date().getFullYear()} SoundWave Audio. All rights reserved.
             </p>
+            {/* Powered by Nerdware */}
+            <p className="text-xs md:text-[10px] text-zinc-400 uppercase tracking-widest order-3 md:order-2">
+              Powered by{" "}
+              <a
+                href="https://nerdwaretechnologies.com/"
+                target="_blank"
+                rel="noopener noreferrer"
+                className="hover:text-emerald-400 transition-all duration-300"
+              >
+                Nerdware Systems Limited
+              </a>
+            </p>
 
             {/* Social Links */}
             <div className="flex items-center space-x-8 md:space-x-6 order-1 md:order-2">
               <a
-                href="https://instagram.com"
+                href="https://instagram.com/@soundwave_254"
                 target="_blank"
                 rel="noopener noreferrer"
                 className="hover:text-emerald-400 transition-all duration-300 text-zinc-400 hover:scale-110"

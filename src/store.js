@@ -4,16 +4,35 @@ import { composeWithDevTools } from '@redux-devtools/extension';
 import {
   productListReducer,
   productDetailsReducer,
+  productCreateReducer,
+  productUpdateReducer,
+  productDeleteReducer,
   featuredProductsReducer,
   onSaleProductsReducer,
+  newArrivalProductsReducer,
+  bestsellerProductsReducer,
+  relatedProductsReducer,
+  searchProductsReducer,
   categoryListReducer,
+  categoryDetailsReducer,
   categoryProductsReducer,
+  categoryCreateReducer,
+  categoryUpdateReducer,
+  categoryDeleteReducer,
   brandListReducer,
+  brandDetailsReducer,
   brandProductsReducer,
+  brandCreateReducer,
+  brandUpdateReducer,
+  brandDeleteReducer,
   reviewListReducer,
   reviewCreateReducer,
+  reviewUpdateReducer,
+  reviewDeleteReducer,
   myReviewsReducer,
+  reviewMarkHelpfulReducer,
   productImageAddReducer,
+  productImageUpdateReducer,
   productImageDeleteReducer,
   filterReducer,
 } from './reducers/productReducers';
@@ -125,19 +144,49 @@ import {
 
 const reducer = combineReducers({
   cart: cartReducer,
+   // Product reducers
   productList: productListReducer,
   productDetails: productDetailsReducer,
+  productCreate: productCreateReducer,
+  productUpdate: productUpdateReducer,
+  productDelete: productDeleteReducer,
   featuredProducts: featuredProductsReducer,
   onSaleProducts: onSaleProductsReducer,
+  newArrivalProducts: newArrivalProductsReducer,
+  bestsellerProducts: bestsellerProductsReducer,
+  relatedProducts: relatedProductsReducer,
+  searchProducts: searchProductsReducer,
+
+  // Category reducers
   categoryList: categoryListReducer,
+  categoryDetails: categoryDetailsReducer,
   categoryProducts: categoryProductsReducer,
+  categoryCreate: categoryCreateReducer,
+  categoryUpdate: categoryUpdateReducer,
+  categoryDelete: categoryDeleteReducer,
+
+  // Brand reducers
   brandList: brandListReducer,
+  brandDetails: brandDetailsReducer,
   brandProducts: brandProductsReducer,
+  brandCreate: brandCreateReducer,
+  brandUpdate: brandUpdateReducer,
+  brandDelete: brandDeleteReducer,
+
+  // Review reducers
   reviewList: reviewListReducer,
   reviewCreate: reviewCreateReducer,
+  reviewUpdate: reviewUpdateReducer,
+  reviewDelete: reviewDeleteReducer,
   myReviews: myReviewsReducer,
+  reviewMarkHelpful: reviewMarkHelpfulReducer,
+
+  // Product Image reducers
   productImageAdd: productImageAddReducer,
+  productImageUpdate: productImageUpdateReducer,
   productImageDelete: productImageDeleteReducer,
+
+  // Filter reducer
   filters: filterReducer,
 
   // Customer reducers

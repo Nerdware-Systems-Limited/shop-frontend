@@ -165,11 +165,21 @@ async function generateAllRoutes() {
       
       products.forEach(product => {
         if (product.slug) {
+          // Ensure lastmod is in ISO 8601 format
+          let lastmod = now;
+          if (product.updated_at) {
+            const date = new Date(product.updated_at);
+            lastmod = isNaN(date.getTime()) ? now : date.toISOString();
+          } else if (product.created_at) {
+            const date = new Date(product.created_at);
+            lastmod = isNaN(date.getTime()) ? now : date.toISOString();
+          }
+          
           routes.push({
             url: `/product/${product.slug}`,
             changefreq: 'weekly',
             priority: product.is_featured ? 0.9 : 0.8,
-            lastmod: product.updated_at || product.created_at || now,
+            lastmod: lastmod,
           });
         }
       });

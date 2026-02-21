@@ -55,6 +55,10 @@ import {
   PASSWORD_RESET_CONFIRM_SUCCESS,
   PASSWORD_RESET_CONFIRM_FAIL,
   PASSWORD_RESET_CONFIRM_RESET,
+  CONTACT_SUBMIT_REQUEST,
+  CONTACT_SUBMIT_SUCCESS,
+  CONTACT_SUBMIT_FAIL,
+  CONTACT_SUBMIT_RESET,
 } from '../constants/customerConstants';
 
 // Login user
@@ -506,4 +510,32 @@ export const confirmPasswordReset = (resetData) => async (dispatch) => {
 // Reset confirm password state
 export const resetConfirmPassword = () => (dispatch) => {
   dispatch({ type: PASSWORD_RESET_CONFIRM_RESET });
+};
+
+// Submit contact form (public — no auth required)
+export const submitContactMessage = (contactData) => async (dispatch) => {
+  try {
+    dispatch({ type: CONTACT_SUBMIT_REQUEST });
+
+    const { data } = await apiClient.post('/customers/contact/', contactData);
+
+    dispatch({
+      type: CONTACT_SUBMIT_SUCCESS,
+      payload: data,
+    });
+  } catch (error) {
+    dispatch({
+      type: CONTACT_SUBMIT_FAIL,
+      payload:
+        error.response?.data ||
+        error.response?.data?.message ||
+        error.message ||
+        'Failed to send message',
+    });
+  }
+};
+
+// Reset contact form state
+export const resetContactSubmit = () => (dispatch) => {
+  dispatch({ type: CONTACT_SUBMIT_RESET });
 };

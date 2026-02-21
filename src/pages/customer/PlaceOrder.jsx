@@ -205,6 +205,11 @@ function PlaceOrder({ setCompleted, completed }) {
     }
     
     setLoading(true);
+
+    const shippingAddr = cart.shippingAddress;
+    // Determine if this is a guest/inline address (non-integer ID) or a saved address PK
+    const isGuestAddress = !shippingAddr?.id || isNaN(Number(shippingAddr.id));
+
     
     const orderData = {
       items: cart.cartItems.map(item => ({
@@ -220,15 +225,27 @@ function PlaceOrder({ setCompleted, completed }) {
       discount_code: cart.discountCode || '',
       is_gift: cart.isGift || false,
       gift_message: cart.giftMessage || '',
-      // Include shipping address for cases without method
-      shipping_address: cart.shippingAddress,
-      shipping_address_id: cart.shippingAddress.id,
-      billing_address_id: cart.shippingAddress.id, 
+      // Send inline address object for guest/new addresses; saved-address PK for registered users
+      ...(isGuestAddress
+        ? {
+            shipping_address: shippingAddr,
+            billing_address: shippingAddr,
+            shipping_address_id: null,
+            billing_address_id: null,
+          }
+        : {
+            shipping_address_id: shippingAddr.id,
+            billing_address_id: shippingAddr.id,
+          }), 
+      guest_first_name: cart.shippingAddress.firstname,
+      guest_last_name: cart.shippingAddress.lastname,
+      guest_email: cart.shippingAddress.email,
+      guest_phone: cart.shippingAddress.phone,
     };
 
     // console.log('Cart items structure:', cart.cartItems);
 
-    // console.log('Placing order with data:', orderData);
+    console.log('Placing order with data:', orderData);
     
     try {
       const result = await dispatch(createOrder(orderData));

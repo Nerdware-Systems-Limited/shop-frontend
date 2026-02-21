@@ -54,6 +54,10 @@ import {
   PASSWORD_RESET_CONFIRM_SUCCESS,
   PASSWORD_RESET_CONFIRM_FAIL,
   PASSWORD_RESET_CONFIRM_RESET,
+  CONTACT_SUBMIT_REQUEST,
+  CONTACT_SUBMIT_SUCCESS,
+  CONTACT_SUBMIT_FAIL,
+  CONTACT_SUBMIT_RESET,
 } from '../constants/customerConstants';
 
 // User login reducer
@@ -289,6 +293,22 @@ export const passwordResetConfirmReducer = (state = {}, action) => {
     case PASSWORD_RESET_CONFIRM_FAIL:
       return { loading: false, error: action.payload };
     case PASSWORD_RESET_CONFIRM_RESET:
+      return {};
+    default:
+      return state;
+  }
+};
+
+// Contact form submit reducer
+export const contactSubmitReducer = (state = {}, action) => {
+  switch (action.type) {
+    case CONTACT_SUBMIT_REQUEST:
+      return { loading: true };
+    case CONTACT_SUBMIT_SUCCESS:
+      return { loading: false, success: true, message: action.payload.message };
+    case CONTACT_SUBMIT_FAIL:
+      return { loading: false, error: action.payload };
+    case CONTACT_SUBMIT_RESET:
       return {};
     default:
       return state;

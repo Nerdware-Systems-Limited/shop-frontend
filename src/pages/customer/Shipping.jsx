@@ -11,6 +11,7 @@ import {
 import { Button } from "@/components/ui/button";
 import { Plus, MapPin, Check, ArrowRight, ArrowLeft, Edit2, Trash2, AlertCircle } from "lucide-react";
 import { AddressModal } from "../../components/checkout/AddressModal";
+import { Alert, AlertDescription } from "@/components/ui/alert";
 
 function Shipping({ setCompleted, completed }) {
   const dispatch = useDispatch();
@@ -21,6 +22,16 @@ function Shipping({ setCompleted, completed }) {
   const [selectedAddressId, setSelectedAddressId] = useState(null);
   const [editingAddress, setEditingAddress] = useState(null);
   const [deleteConfirmId, setDeleteConfirmId] = useState(null);
+
+  const [isGuestMode, setIsGuestMode] = useState(false);
+  const [guestEmail, setGuestEmail] = useState("");
+  const [guestPhone, setGuestPhone] = useState("");
+  const [guestFirstName, setGuestFirstName] = useState("");
+  const [guestLastName, setGuestLastName] = useState("");
+  const [guestAddress, setGuestAddress] = useState(null);
+
+
+  console.log(guestAddress)
 
   // Redux selectors
   const userLogin = useSelector((state) => state.userLogin);
@@ -38,11 +49,12 @@ function Shipping({ setCompleted, completed }) {
   // Auth redirect
   useEffect(() => {
     if (!userInfo) {
-      navigate("/login");
+      // navigate("/login");
+      setIsGuestMode(true);
     } else {
       dispatch(listAddresses());
     }
-  }, [userInfo, navigate, dispatch]);
+  }, [userInfo, dispatch]);
 
   // Sync selected address with cart state
   useEffect(() => {
@@ -83,6 +95,7 @@ function Shipping({ setCompleted, completed }) {
   }, [dispatch]);
 
   // Handler: Delete address with confirmation
+  // Handler: Delete address with confirmation
   const handleDeleteAddress = useCallback((addressId, e) => {
     e?.stopPropagation();
     
@@ -99,10 +112,45 @@ function Shipping({ setCompleted, completed }) {
     }
   }, [deleteConfirmId, dispatch]);
 
+  // Get addresses array safely (MOVED HERE - was at line 148)
+  const addressesArray = addresses?.results || addresses || [];
+  const hasAddresses = addressesArray.length > 0;
+  const selectedAddress = addressesArray.find(addr => addr.id === selectedAddressId);
+
+  // Handler: Back to cart (NEW - was missing)
+  const handleBackToCart = useCallback(() => {
+    navigate("/cart");
+  }, [navigate]);
+
   // Handler: Continue to payment
   const handleContinue = useCallback(() => {
-    if (!selectedAddressId) {
-      return;
+    // For guests: validate email and address
+    if (isGuestMode) {
+      if (!guestEmail) {
+        alert("Email is required for guest checkout");
+        return;
+      }
+      
+      if (!selectedAddressId && !guestAddress) {
+        alert("Please add a shipping address");
+        return;
+      }
+      
+      // Save guest info to cart
+      dispatch(saveShippingAddress({
+        id: selectedAddressId || `guest-${Date.now()}`,
+        firstname: guestFirstName,
+        lastname: guestLastName,
+        email: guestEmail,
+        phone: guestPhone,
+        ...guestAddress, // Address data from modal
+      }));
+    } else {
+      // Logged in user - existing logic
+      if (!selectedAddressId) {
+        return;
+      }
+      dispatch(saveShippingAddress(selectedAddress));
     }
 
     if (typeof setCompleted === 'function') {
@@ -110,17 +158,16 @@ function Shipping({ setCompleted, completed }) {
     }
 
     navigate("/payment");
-  }, [selectedAddressId, setCompleted, navigate]);
+  }, [isGuestMode, guestFirstName, guestLastName ,guestEmail, guestPhone, guestAddress, selectedAddressId, selectedAddress, dispatch, setCompleted, navigate]);
 
-  // Handler: Back to cart
-  const handleBackToCart = useCallback(() => {
-    navigate('/cart');
-  }, [navigate]);
+  // // REMOVED FROM HERE - the addressesArray and selectedAddress definitions were here before
+  // // Get addresses array safely
+  // const addressesArray = addresses?.results || addresses || [];
+  // const hasAddresses = addressesArray.length > 0;
+  // const selectedAddress = addressesArray.find(addr => addr.id === selectedAddressId);
 
-  // Get addresses array safely
-  const addressesArray = addresses?.results || addresses || [];
-  const hasAddresses = addressesArray.length > 0;
-  const selectedAddress = addressesArray.find(addr => addr.id === selectedAddressId);
+  const address = userInfo ? selectedAddress : guestAddress;
+
 
   return (
     <div className="bg-white min-h-screen">
@@ -159,6 +206,91 @@ function Shipping({ setCompleted, completed }) {
             Add New
           </Button>
         </div>
+
+        {/* Guest Checkout Option */}
+        {!userInfo && (
+          <div className="mb-8 border-2 border-black p-6 bg-gray-50">
+            <h3 className="text-sm uppercase tracking-[0.2em] font-medium mb-4">
+              Continue as Guest
+            </h3>
+            <div className="space-y-4">
+              <div>
+                <label className="text-[10px] uppercase tracking-wider block mb-1">
+                  First Name <span className="text-red-500">*</span>
+                </label>
+                <input
+                  type="text"
+                  value={guestFirstName}
+                  onChange={(e) => setGuestFirstName(e.target.value)}
+                  placeholder="first name"
+                  className="w-full border-2 border-black px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-black"
+                />
+              </div>
+              
+              <div>
+                <label className="text-[10px] uppercase tracking-wider block mb-1">
+                  Last Name
+                </label>
+                <input
+                  type="text"
+                  value={guestLastName}
+                  onChange={(e) => setGuestLastName(e.target.value)}
+                  placeholder="last name"
+                  className="w-full border-2 border-black px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-black"
+                />
+              </div>
+
+              <div>
+                <label className="text-[10px] uppercase tracking-wider block mb-1">
+                  Email Address <span className="text-red-500">*</span>
+                </label>
+                <input
+                  type="email"
+                  value={guestEmail}
+                  onChange={(e) => setGuestEmail(e.target.value)}
+                  placeholder="your@email.com"
+                  className="w-full border-2 border-black px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-black"
+                />
+              </div>
+              
+              <div>
+                <label className="text-[10px] uppercase tracking-wider block mb-1">
+                  Phone Number
+                </label>
+                <input
+                  type="tel"
+                  value={guestPhone}
+                  onChange={(e) => setGuestPhone(e.target.value)}
+                  placeholder="+254712345678"
+                  className="w-full border-2 border-black px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-black"
+                />
+              </div>
+              
+              <Button
+                onClick={handleAddAddress}
+                className="w-full h-10 bg-black text-white hover:bg-gray-900 text-[10px] uppercase tracking-[0.2em]"
+              >
+                <Plus className="w-4 h-4 mr-2" />
+                Enter Shipping Address
+              </Button>
+              
+              <div className="text-xs text-gray-600">
+                <p>✓ No account needed</p>
+                <p>✓ Track your order via email</p>
+                <p>✓ Create account later to save your details</p>
+              </div>
+            </div>
+            
+            <div className="mt-4 pt-4 border-t border-gray-300 text-center">
+              <button
+                onClick={() => navigate("/login")}
+                className="text-xs uppercase tracking-wider hover:underline"
+              >
+                Already have an account? Sign in
+              </button>
+            </div>
+          </div>
+        )}
 
         {/* Loading State */}
         {loadingAddresses && (
@@ -292,7 +424,7 @@ function Shipping({ setCompleted, completed }) {
         )}
 
         {/* Empty State */}
-        {!loadingAddresses && !addressesError && !hasAddresses && (
+        {!loadingAddresses && !addressesError && !hasAddresses && !isGuestMode && (
           <div className="border-2 border-black p-12 text-center mb-8 animate-in fade-in slide-in-from-bottom-4 duration-500">
             <MapPin className="w-12 h-12 mx-auto mb-4 opacity-30" />
             <h3 className="text-sm uppercase tracking-[0.2em] font-medium mb-2">
@@ -312,7 +444,7 @@ function Shipping({ setCompleted, completed }) {
         )}
 
         {/* Selected Address Preview */}
-        {selectedAddress && (
+        {address && (
           <div className="border-2 border-black bg-gray-50 p-5 mb-8 animate-in fade-in slide-in-from-top-2 duration-300">
             <div className="flex items-start gap-3">
               <Check className="w-5 h-5 flex-shrink-0 mt-0.5" />
@@ -321,10 +453,10 @@ function Shipping({ setCompleted, completed }) {
                   Shipping To
                 </p>
                 <p className="text-sm leading-relaxed">
-                  {selectedAddress.street_address}
-                  {selectedAddress.apartment && `, ${selectedAddress.apartment}`}
+                  {address.street_address}
+                  {address.apartment && `, ${address.apartment}`}
                   <br />
-                  {selectedAddress.city}, {selectedAddress.county} {selectedAddress.postal_code}
+                  {address.city}, {address.county} {address.postal_code}
                 </p>
               </div>
             </div>
@@ -359,7 +491,7 @@ function Shipping({ setCompleted, completed }) {
           </Button>
           <Button
             onClick={handleContinue}
-            disabled={!selectedAddressId}
+            disabled={!address}
             className="flex-1 h-12 bg-black text-white hover:bg-gray-900 disabled:opacity-40 disabled:cursor-not-allowed text-[10px] uppercase tracking-[0.2em] transition-all hover:scale-[1.02] disabled:hover:scale-100"
           >
             Continue to Payment
@@ -382,6 +514,7 @@ function Shipping({ setCompleted, completed }) {
         onOpenChange={setModalOpen}
         editAddress={editingAddress}
         addressType="shipping"
+        onSave={isGuestMode ? setGuestAddress : undefined} 
       />
     </div>
   );

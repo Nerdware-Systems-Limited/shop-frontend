@@ -26,7 +26,8 @@ export function AddressModal({
   open, 
   onOpenChange, 
   editAddress = null,
-  addressType = "shipping" // "shipping" or "billing"
+  addressType = "shipping", // "shipping" or "billing"
+  onSave 
 }) {
   const dispatch = useDispatch();
   
@@ -171,6 +172,13 @@ export function AddressModal({
   const handleSubmit = () => {
     // Validation
     if (!formData.street_address || !formData.county || !formData.city || !formData.postal_code) {
+      return;
+    }
+
+    // If guest mode, return address data without API call
+    if (onSave) {
+      onSave(formData);
+      handleClose();
       return;
     }
 

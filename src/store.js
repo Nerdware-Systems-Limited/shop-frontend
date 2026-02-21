@@ -54,6 +54,7 @@ import {
   passwordResetReducer,
   passwordResetVerifyReducer,
   passwordResetConfirmReducer,
+  contactSubmitReducer,
 } from './reducers/customerReducers';
 import {
   orderCreateReducer,
@@ -206,6 +207,7 @@ const reducer = combineReducers({
   passwordReset: passwordResetReducer,
   passwordResetVerify: passwordResetVerifyReducer,
   passwordResetConfirm: passwordResetConfirmReducer,
+  contactSubmit: contactSubmitReducer,
 
   // Order reducers
   orderCreate: orderCreateReducer,

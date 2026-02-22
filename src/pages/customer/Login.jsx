@@ -89,26 +89,6 @@ function Login() {
         <div className="absolute inset-0 bg-black/60 backdrop-blur-sm" />
       </div>
 
-      {/* Header */}
-      <header className="absolute top-0 left-0 right-0 z-10 py-4 sm:py-6">
-        <div className="container mx-auto flex items-center justify-between px-4 sm:px-6">
-          <Link to="/" className="flex items-center gap-2">
-            <span className="text-xl sm:text-2xl font-black tracking-tight text-white">
-              soundwave
-            </span>
-            <span className="text-xl sm:text-2xl font-light text-white/80">audio</span>
-          </Link>
-          <Link
-            to="/"
-            className="flex items-center gap-2 text-xs sm:text-sm text-white/70 transition-colors hover:text-white"
-          >
-            <ArrowLeft className="h-3 w-3 sm:h-4 sm:w-4" />
-            <span className="hidden sm:inline">Back to Store</span>
-            <span className="sm:hidden">Back</span>
-          </Link>
-        </div>
-      </header>
-
       {/* Main Content */}
       <main className="relative z-10 w-full px-4 py-20 sm:py-24">
         <div className="container mx-auto flex items-center justify-center">

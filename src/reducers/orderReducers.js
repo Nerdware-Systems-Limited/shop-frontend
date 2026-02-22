@@ -59,6 +59,10 @@ import {
   SET_ORDER_FILTERS,
   CLEAR_ORDER_FILTERS,
   SET_ORDER_SORT,
+  ORDER_TRACK_TOKEN_REQUEST,
+  ORDER_TRACK_TOKEN_SUCCESS,
+  ORDER_TRACK_TOKEN_FAIL,
+  ORDER_TRACK_TOKEN_RESET,
 } from '../constants/orderConstants';
 
 // Order Create Reducer
@@ -359,6 +363,51 @@ export const orderFilterReducer = (state = {
         ...state,
         sort: action.payload
       };
+    default:
+      return state;
+  }
+};
+
+/**
+ * orderTrackTokenReducer
+ * ─────────────────────────────────────────────────────────────────────────────
+ * Manages state for the public token-based order tracking endpoint.
+ *
+ * State shape:
+ * {
+ *   loading : bool,
+ *   order   : object | null,   ← the full order data returned by the backend
+ *   error   : string | null,   ← "This tracking link has expired..." etc.
+ *   expired : bool,            ← true when the backend returns HTTP 401
+ * }
+ */
+export const orderTrackTokenReducer = (
+  state = { loading: false, order: null, error: null, expired: false },
+  action
+) => {
+  switch (action.type) {
+
+    case ORDER_TRACK_TOKEN_REQUEST:
+      return { loading: true, order: null, error: null, expired: false };
+
+    case ORDER_TRACK_TOKEN_SUCCESS:
+      return { loading: false, order: action.payload, error: null, expired: false };
+
+    case ORDER_TRACK_TOKEN_FAIL:
+      // The backend returns HTTP 401 for expired/invalid tokens.
+      // We surface that as `expired: true` so the component can show a
+      // specific "link expired" UI instead of a generic error.
+      return {
+        loading: false,
+        order: null,
+        error: action.payload,
+        expired: action.payload?.toLowerCase().includes('expired') ||
+                 action.payload?.toLowerCase().includes('invalid'),
+      };
+
+    case ORDER_TRACK_TOKEN_RESET:
+      return { loading: false, order: null, error: null, expired: false };
+
     default:
       return state;
   }

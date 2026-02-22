@@ -61,6 +61,7 @@ import {
   getOrderNotes,
   downloadOrderItem
 } from '../actions/orderActions';
+import OrderTrackingPage from './OrderTrackingPage';
 
 const OrderDetails = () => {
   const { id: orderNumber } = useParams();
@@ -94,13 +95,16 @@ const OrderDetails = () => {
   const { notes } = orderNotes;
 
   useEffect(() => {
-    if (!userInfo) {
-      navigate('/login');
-    } else if (orderNumber) {
+    if (userInfo && orderNumber) {
       dispatch(getOrderDetails(orderNumber));
       dispatch(getOrderNotes(orderNumber));
     }
-  }, [dispatch, navigate, userInfo, orderNumber, updateSuccess]);
+  }, [dispatch, userInfo, orderNumber, updateSuccess]);
+
+
+  if (!userInfo) {
+    return <OrderTrackingPage />;
+  }
 
   // Helper functions
   const getStatusColor = (status) => {

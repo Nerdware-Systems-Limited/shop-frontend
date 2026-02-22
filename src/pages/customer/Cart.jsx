@@ -97,11 +97,7 @@ const Cart = () => {
   };
 
   const handleCheckout = () => {
-    if (!userInfo) {
-      navigate('/login?redirect=/shipping');
-    } else {
-      navigate('/shipping');
-    }
+    navigate('/shipping');
   };
 
   const shippingProgress = Math.min((itemsPrice / 5000) * 100, 100);

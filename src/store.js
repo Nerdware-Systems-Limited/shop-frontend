@@ -76,6 +76,7 @@ import {
   orderNoteCreateReducer,
   orderNoteListReducer,
   orderFilterReducer,
+  orderTrackTokenReducer,
 } from './reducers/orderReducers';
 import {
   mpesaConfigListReducer,
@@ -229,6 +230,7 @@ const reducer = combineReducers({
   orderNoteCreate: orderNoteCreateReducer,
   orderNoteList: orderNoteListReducer,
   orderFilters: orderFilterReducer,
+  orderTrackToken:   orderTrackTokenReducer,
 
   // M-Pesa Payment reducers
   mpesaConfigList: mpesaConfigListReducer,

@@ -60,6 +60,10 @@ import {
   SET_ORDER_FILTERS,
   CLEAR_ORDER_FILTERS,
   SET_ORDER_SORT,
+  ORDER_TRACK_TOKEN_REQUEST,
+  ORDER_TRACK_TOKEN_SUCCESS,
+  ORDER_TRACK_TOKEN_FAIL,
+  ORDER_TRACK_TOKEN_RESET,
 } from '../constants/orderConstants';
 
 // Create new order
@@ -535,4 +539,56 @@ export const setOrderSort = (sortOption) => (dispatch) => {
     type: SET_ORDER_SORT,
     payload: sortOption,
   });
+};
+
+/**
+ * getOrderByTrackingToken
+ * ─────────────────────────────────────────────────────────────────────────────
+ * Public action — no Authorization header needed.
+ * Calls:  GET /api/orders/track/?token=<token>
+ *
+ * Usage in component:
+ *   dispatch(getOrderByTrackingToken(token))
+ *
+ * @param {string} token  - The signed tracking token from the email URL
+ */
+export const getOrderByTrackingToken = (token) => async (dispatch) => {
+  try {
+    dispatch({ type: ORDER_TRACK_TOKEN_REQUEST });
+
+    // apiClient is used exactly like all other actions in your codebase.
+    // The backend endpoint does NOT require an Authorization header —
+    // the signed token itself is the credential, passed as a query param.
+
+    const { data } = await apiClient.get(`orders/track/?token=${encodeURIComponent(token)}`);
+    console.log(data)
+
+    dispatch({
+      type: ORDER_TRACK_TOKEN_SUCCESS,
+      payload: data,
+    });
+  } catch (error) {
+    dispatch({
+      type: ORDER_TRACK_TOKEN_FAIL,
+      // Handles 401 (expired/invalid token) and 404 (not found) gracefully
+      payload:
+        error.response?.data?.error ||
+        error.response?.data?.message ||
+        error.message ||
+        'Failed to load order tracking information',
+    });
+  }
+};
+
+
+/**
+ * resetOrderTrackingToken
+ * ─────────────────────────────────────────────────────────────────────────────
+ * Clears the orderTrackToken slice — call on component unmount or navigation.
+ *
+ * Usage in component:
+ *   useEffect(() => { return () => dispatch(resetOrderTrackingToken()); }, []);
+ */
+export const resetOrderTrackingToken = () => (dispatch) => {
+  dispatch({ type: ORDER_TRACK_TOKEN_RESET });
 };

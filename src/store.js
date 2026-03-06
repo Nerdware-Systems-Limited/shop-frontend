@@ -144,6 +144,12 @@ import {
   inventoryFilterReducer,
 } from './reducers/inventoryReducers';
 
+import {
+  installationJobListReducer,
+  installationJobDetailsReducer,
+  featuredInstallationJobsReducer,
+} from './reducers/Installationreducers';
+
 const reducer = combineReducers({
   cart: cartReducer,
    // Product reducers
@@ -295,6 +301,11 @@ const reducer = combineReducers({
   inventoryAnalytics: inventoryAnalyticsReducer,
   bulkInventoryUpdate: bulkInventoryUpdateReducer,
   inventoryFilters: inventoryFilterReducer,
+
+  // Installation reducers
+  installationJobList:    installationJobListReducer,
+  installationJobDetails: installationJobDetailsReducer,
+  featuredInstallationJobs: featuredInstallationJobsReducer,
 });
 
 const cartItemsFromStorage = localStorage.getItem('cartItems') ?

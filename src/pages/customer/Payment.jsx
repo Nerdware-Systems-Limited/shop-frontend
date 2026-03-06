@@ -34,6 +34,10 @@ function Payment({ setCompleted, completed }) {
     const cart = useSelector((state) => state.cart);
     
     useEffect(() => {
+    window.scrollTo({ top: 0, behavior: "smooth" });
+    }, []);
+
+    useEffect(() => {
       if (cart.paymentMethod?.method) {
         setPaymentMethod(cart.paymentMethod.method);
       }

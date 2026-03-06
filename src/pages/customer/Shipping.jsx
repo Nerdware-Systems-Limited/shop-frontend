@@ -29,9 +29,7 @@ function Shipping({ setCompleted, completed }) {
   const [guestFirstName, setGuestFirstName] = useState("");
   const [guestLastName, setGuestLastName] = useState("");
   const [guestAddress, setGuestAddress] = useState(null);
-
-
-  console.log(guestAddress)
+  const [guestErrors, setGuestErrors] = useState({});
 
   // Redux selectors
   const userLogin = useSelector((state) => state.userLogin);
@@ -126,15 +124,33 @@ function Shipping({ setCompleted, completed }) {
   const handleContinue = useCallback(() => {
     // For guests: validate email and address
     if (isGuestMode) {
-      if (!guestEmail) {
-        alert("Email is required for guest checkout");
+      const errors = {};
+      if (!guestFirstName) errors.guestFirstName = "First name is required";
+      if (!guestLastName) errors.guestLastName = "Last name is required";
+      if (!guestEmail) errors.guestEmail = "Email is required";
+      if (!guestPhone) errors.guestPhone = "Phone number is required";
+      if (!guestAddress) errors.guestAddress = "Please enter a shipping address";
+
+      if (Object.keys(errors).length > 0) {
+        setGuestErrors(errors);
+        // Scroll to first error
+        const firstErrorKey = Object.keys(errors)[0];
+        document.getElementById(firstErrorKey)?.scrollIntoView({ behavior: "smooth", block: "center" });
         return;
       }
+      setGuestErrors({});
       
       if (!selectedAddressId && !guestAddress) {
-        alert("Please add a shipping address");
+        errors.guestAddress = "Please enter a shipping address";
+      }
+
+      if (Object.keys(errors).length > 0) {
+        setGuestErrors(errors);
+        const firstErrorKey = Object.keys(errors)[0];
+        document.getElementById(firstErrorKey)?.scrollIntoView({ behavior: "smooth", block: "center" });
         return;
       }
+      setGuestErrors({});
       
       // Save guest info to cart
       dispatch(saveShippingAddress({
@@ -214,30 +230,36 @@ function Shipping({ setCompleted, completed }) {
               Continue as Guest
             </h3>
             <div className="space-y-4">
-              <div>
+              <div id="guestFirstName">
                 <label className="text-[10px] uppercase tracking-wider block mb-1">
                   First Name <span className="text-red-500">*</span>
                 </label>
                 <input
                   type="text"
                   value={guestFirstName}
-                  onChange={(e) => setGuestFirstName(e.target.value)}
+                  onChange={(e) => { setGuestFirstName(e.target.value); setGuestErrors(p => ({ ...p, guestFirstName: "" })) }}
                   placeholder="first name"
-                  className="w-full border-2 border-black px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-black"
+                  className={`w-full border-2 px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-black ${guestErrors.guestFirstName ? 'border-red-500' : 'border-black'}`}
                 />
+                {guestErrors.guestFirstName && (
+                  <p className="text-red-500 text-[10px] mt-1 uppercase tracking-wider">{guestErrors.guestFirstName}</p>
+                )}
               </div>
               
-              <div>
+              <div id="guestLastName">
                 <label className="text-[10px] uppercase tracking-wider block mb-1">
-                  Last Name
+                  Last Name <span className="text-red-500">*</span>
                 </label>
                 <input
                   type="text"
                   value={guestLastName}
-                  onChange={(e) => setGuestLastName(e.target.value)}
+                  onChange={(e) => {setGuestLastName(e.target.value); setGuestErrors(p => ({ ...p, guestLastName: "" })) }}
                   placeholder="last name"
-                  className="w-full border-2 border-black px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-black"
+                  className={`w-full border-2 border-black px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-black ${guestErrors.guestLastName ? 'border-red-500' : 'border-black'}`}
                 />
+                {guestErrors.guestLastName && (
+                  <p className="text-red-500 text-[10px] mt-1 uppercase tracking-wider">{guestErrors.guestLastName}</p>
+                )}
               </div>
 
               <div>
@@ -247,32 +269,44 @@ function Shipping({ setCompleted, completed }) {
                 <input
                   type="email"
                   value={guestEmail}
-                  onChange={(e) => setGuestEmail(e.target.value)}
+                  onChange={(e) => { setGuestEmail(e.target.value); setGuestErrors(p => ({ ...p, guestEmail: "" })) }}
                   placeholder="your@email.com"
-                  className="w-full border-2 border-black px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-black"
+                  className={`w-full border-2 border-black px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-black ${guestErrors.guestLastName ? 'border-red-500' : 'border-black'}`}
                 />
+                {guestErrors.guestEmail && (
+                  <p className="text-red-500 text-[10px] mt-1 uppercase tracking-wider">{guestErrors.guestEmail}</p>
+                )}
               </div>
               
               <div>
                 <label className="text-[10px] uppercase tracking-wider block mb-1">
-                  Phone Number
+                  Phone Number <span className="text-red-500">*</span>
                 </label>
                 <input
                   type="tel"
                   value={guestPhone}
-                  onChange={(e) => setGuestPhone(e.target.value)}
+                  onChange={(e) => { setGuestPhone(e.target.value); setGuestErrors(p => ({ ...p, guestPhone: "" })) }}
                   placeholder="+254712345678"
-                  className="w-full border-2 border-black px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-black"
+                  className={`w-full border-2 border-black px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-black ${guestErrors.guestPhone ? 'border-red-500' : 'border-black'}`}
                 />
+                {guestErrors.guestPhone && (
+                  <p className="text-red-500 text-[10px] mt-1 uppercase tracking-wider">{guestErrors.guestPhone}</p>
+                )}
               </div>
-              
-              <Button
-                onClick={handleAddAddress}
-                className="w-full h-10 bg-black text-white hover:bg-gray-900 text-[10px] uppercase tracking-[0.2em]"
-              >
-                <Plus className="w-4 h-4 mr-2" />
-                Enter Shipping Address
-              </Button>
+              <div id="guestAddress">
+                  <Button
+                    onClick={handleAddAddress}
+                    className="w-full h-10 bg-black text-white hover:bg-gray-900 text-[10px] uppercase tracking-[0.2em]"
+                  >
+                    <Plus className="w-4 h-4 mr-2" />
+                    Enter Shipping Address
+                  </Button>
+                  {guestErrors.guestAddress && (
+                    <p className="text-red-500 text-[10px] mt-1 uppercase tracking-wider">
+                      {guestErrors.guestAddress}
+                    </p>
+                  )}
+              </div>
               
               <div className="text-xs text-gray-600">
                 <p>✓ No account needed</p>

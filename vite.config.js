@@ -149,6 +149,7 @@ async function generateAllRoutes() {
   routes.push(
     { url: '/', changefreq: 'daily', priority: 1.0, lastmod: now },
     { url: '/products', changefreq: 'daily', priority: 0.9, lastmod: now },
+    { url: '/installations', changefreq: 'weekly', priority: 0.85, lastmod: now },
     { url: '/about', changefreq: 'monthly', priority: 0.8, lastmod: now },
     { url: '/contact', changefreq: 'monthly', priority: 0.8, lastmod: now },
     { url: '/terms', changefreq: 'yearly', priority: 0.5, lastmod: now },
@@ -233,7 +234,37 @@ async function generateAllRoutes() {
       console.error('❌ Failed to fetch brands:', error.message);
       console.log('⚠️  Continuing without brand routes...\n');
     }
-    
+
+    // Fetch installation jobs
+    console.log('🔧 Fetching installation jobs...');
+    try {
+      const jobs = await fetchAllPages('/installations/jobs/?page_size=1000');
+
+      jobs.forEach(job => {
+        if (job.slug) {
+          let lastmod = now;
+          if (job.updated_at) {
+            const date = new Date(job.updated_at);
+            lastmod = isNaN(date.getTime()) ? now : date.toISOString();
+          } else if (job.job_date) {
+            const date = new Date(job.job_date);
+            lastmod = isNaN(date.getTime()) ? now : date.toISOString();
+          }
+
+          routes.push({
+            url: `/installations/${job.slug}`,
+            changefreq: 'monthly',
+            priority: job.is_featured ? 0.85 : 0.75,
+            lastmod,
+          });
+        }
+      });
+
+      console.log(`✅ Added ${jobs.length} installation job routes\n`);
+    } catch (error) {
+      console.error('❌ Failed to fetch installation jobs:', error.message);
+      console.log('⚠️  Continuing without installation job routes...\n');
+    } 
   } catch (error) {
     console.error('❌ Unexpected error during route generation:', error);
   }

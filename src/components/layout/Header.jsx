@@ -61,6 +61,12 @@ const Header = () => {
               Products
             </Link>
             <Link
+              to="/installations"
+              className="text-xs uppercase tracking-widest text-zinc-300 hover:text-white transition-colors"
+            >
+              Installations
+            </Link>
+            <Link
               to="/about"
               className="text-xs uppercase tracking-widest text-zinc-300 hover:text-white transition-colors"
             >
@@ -143,6 +149,13 @@ const Header = () => {
               className="text-xs uppercase tracking-widest text-zinc-300 hover:text-white transition-colors"
             >
               Products
+            </Link>
+            <Link
+              to="/installations"
+              onClick={() => setMobileMenuOpen(false)}
+              className="text-xs uppercase tracking-widest text-zinc-300 hover:text-white transition-colors"
+            >
+              Installations
             </Link>
             <Link
               to="/about"

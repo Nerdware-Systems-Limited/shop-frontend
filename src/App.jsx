@@ -27,6 +27,8 @@ import ResetPassword from './pages/customer/ResetPassword';
 import ShippingPolicy from './pages/ShippingPolicy';
 import ReturnsExchanges from './pages/ReturnsExchanges';
 import DefaultSEO from './pages/DefaultSEO';
+import Installations from './pages/Installations';
+import InstallationDetails from './pages/InstallationDetails';
 
 /**
  * App Component with Consolidated SEO Strategy
@@ -80,6 +82,10 @@ function App() {
               {/* ========== PRODUCT DETAILS (uses ProductSEO internally) ========== */}
               {/* DO NOT add DefaultSEO here - ProductDetails.jsx handles its own SEO */}
               <Route path="/product/:slug" element={<ProductDetails />} />
+
+              <Route path="/installations" element={<Installations />} />
+
+              <Route path="/installations/:slug" element={<InstallationDetails />} />
 
               {/* ========== STATIC PAGES (use DefaultSEO) ========== */}
               <Route 

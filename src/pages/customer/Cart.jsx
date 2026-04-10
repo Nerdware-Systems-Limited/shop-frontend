@@ -166,7 +166,7 @@ const Cart = () => {
                   {/* Price */}
                   <div className="flex items-center gap-2">
                     <span className="text-lg font-extrabold tracking-tight text-black">
-                      Ksh {item.price.toLocaleString()}
+                      Ksh {item.price?.toLocaleString() || item.originalPrice?.toLocaleString()}
                     </span>
                     {item.discount > 0 && (
                       <span className="text-xs text-gray-300 line-through">
@@ -199,7 +199,7 @@ const Cart = () => {
                       </button>
                     </div>
                     <span className="text-sm font-bold text-black">
-                      Ksh {(item.price * item.qty).toLocaleString()}
+                      Ksh {(item.price || item.originalPrice * item.qty).toLocaleString()}
                     </span>
                   </div>
 
@@ -237,7 +237,7 @@ const Cart = () => {
                       <span className="text-gray-300"> ×{item.qty}</span>
                     </span>
                     <span className="text-xs font-semibold text-black shrink-0">
-                      Ksh {(item.price * item.qty).toLocaleString()}
+                      Ksh {(item.price|| item.originalPrice * item.qty).toLocaleString()}
                     </span>
                   </div>
                 ))}

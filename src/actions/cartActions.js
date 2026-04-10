@@ -101,7 +101,7 @@ export const calculateTotals = () => (dispatch, getState) => {
   );
 
   const totalPrice = itemsPrice
-  console.log("itemsPrice", cartItems)
+  // console.log("itemsPrice", cartItems)
 
   const totalDiscount = cartItems.reduce(
     (acc, item) => acc + (item.originalPrice - item.price) * item.qty,

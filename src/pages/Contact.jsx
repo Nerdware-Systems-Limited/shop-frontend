@@ -1,6 +1,8 @@
 import { useState, useEffect } from "react";
 import { useDispatch, useSelector } from "react-redux";
 import { submitContactMessage, resetContactSubmit } from "../actions/customerActions";
+import DefaultSEO from './DefaultSEO';
+
 
 const Contact = () => {
   const dispatch = useDispatch();
@@ -73,6 +75,8 @@ const Contact = () => {
       : null;
 
   return (
+    <>
+    <DefaultSEO />
     <div className="max-w-2xl mx-auto px-4 py-20">
       <h1 className="text-3xl font-light tracking-[0.2em] uppercase mb-8 text-center">
         Contact
@@ -166,6 +170,7 @@ const Contact = () => {
         </form>
       </div>
     </div>
+    </>
   );
 };
 

@@ -10,6 +10,7 @@ const Header = () => {
   const [searchQuery, setSearchQuery] = useState('');
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
   const [isCartOpen, setIsCartOpen] = useState(false);
+  const [searchOpen, setSearchOpen] = useState(false);
   const navigate = useNavigate();
 
   const { cartItems } = useSelector((state) => state.cart);
@@ -38,13 +39,28 @@ const Header = () => {
           </button>
 
           {/* Logo */}
-          <Link to="/" className="flex-shrink-0">
-            <img
-                src={logo}
-                alt="Sounds Wave Audio Logo"
-                className="h-10 w-auto object-contain brightness-50 invert"
-            />
-          </Link>
+          {!searchOpen && (
+            <Link to="/" className="flex-shrink-0">
+              <div className="relative h-10 w-auto">
+                {/* Bottom layer — full inverted (white) */}
+                <img
+                  src={logo}
+                  alt=""
+                  className="h-10 w-auto object-contain brightness-50 invert"
+                />
+                {/* Top layer — red/maroon, clipped to left 50% */}
+                <img
+                  src={logo}
+                  alt="Sounds Wave Audio Logo"
+                  className="h-10 w-auto object-contain absolute top-0 left-0"
+                  style={{
+                    filter: 'invert(13%) sepia(80%) saturate(700%) hue-rotate(320deg) brightness(90%)',
+                    clipPath: 'inset(0 70% 0 0)'
+                  }}
+                />
+              </div>
+            </Link>
+          )}
 
           {/* Desktop Navigation */}
           <nav className="hidden lg:flex items-center space-x-8">
@@ -104,6 +120,32 @@ const Header = () => {
                 <User className="w-5 h-5 text-zinc-300" />
               </button>
             </Link>
+            {/* Expanding search - mobile only */}
+            <div className="flex items-center md:hidden flex-1 min-w-0 mx-3">
+            {searchOpen ? (
+              <form
+                onSubmit={(e) => { handleSearch(e); setSearchOpen(false); }}
+                className="flex items-center w-full"
+              >
+                <input
+                  autoFocus
+                  type="text"
+                  placeholder="Search products..."
+                  value={searchQuery}
+                  onChange={(e) => setSearchQuery(e.target.value)}
+                  onBlur={() => setSearchOpen(false)}
+                  className="flex-1 w-full px-4 py-2 text-sm rounded-full bg-zinc-800 border border-zinc-700 text-zinc-200 placeholder-zinc-500 focus:outline-none focus:border-zinc-500 transition-all duration-300"
+                />
+              </form>
+            ) : (
+              <button
+                onClick={() => setSearchOpen(true)}
+                className="p-2 hover:bg-zinc-800 rounded transition-colors"
+              >
+                <Search className="w-5 h-5 text-zinc-300" />
+              </button>
+            )}
+          </div>
             <button onClick={() => setIsCartOpen(true)} className="p-2 hover:bg-zinc-800 rounded transition-colors relative">
               <ShoppingBag className="w-5 h-5 text-zinc-300" />
               {cartCount > 0 && (
@@ -116,7 +158,7 @@ const Header = () => {
         </div>
 
         {/* Mobile Search */}
-        <form onSubmit={handleSearch} className="md:hidden pb-3">
+        {/* <form onSubmit={handleSearch} className="md:hidden pb-3">
           <div className="relative">
             <input
               type="text"
@@ -129,7 +171,7 @@ const Header = () => {
               <Search className="w-4 h-4 text-zinc-400" />
             </button>
           </div>
-        </form>
+        </form> */}
       </div>
 
       {/* Mobile Menu */}

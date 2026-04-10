@@ -1,49 +1,52 @@
-import { defineConfig } from 'vite'
-import react from '@vitejs/plugin-react'
-import path from 'path'
-import tailwindcss from '@tailwindcss/vite'
-import fs from 'fs'
+/**
+ * vite.config.js — vite-react-ssg edition
+ *
+ * WHAT CHANGED FROM vite-ssg VERSION:
+ * ─────────────────────────────────────
+ * 1.  The SSG engine is now vite-react-ssg.  No change is needed in this file
+ *     for the plugin itself — vite-react-ssg reads the same `ssgOptions` key
+ *     and the same `includedRoutes` callback shape as vite-ssg did.
+ *
+ * 2.  Everything else (sitemap plugin, robots.txt, fetch helpers, chunk
+ *     splitting, resolve aliases) is unchanged.
+ *
+ * PACKAGE CHANGE IN package.json (not this file):
+ *   - Remove:  "vite-ssg": "..."
+ *   + Add:     "vite-react-ssg": "..."
+ *
+ * INSTALL:
+ *   npm remove vite-ssg && npm install vite-react-ssg
+ */
+
+import { defineConfig } from 'vite';
+import react from '@vitejs/plugin-react';
+import path from 'path';
+import tailwindcss from '@tailwindcss/vite';
+import fs from 'fs';
+
+const API_URL  = process.env.VITE_API_URL  || 'https://shop.nerdwaretechnologies.com/api';
+const SITE_URL = process.env.VITE_SITE_URL || 'https://www.soundwaveaudio.co.ke';
 
 // ============================================================================
-// CONFIGURATION
-// ============================================================================
-
-const API_URL = process.env.VITE_API_URL || 'https://shop.nerdwaretechnologies.com/api';
-const SITE_URL = process.env.VITE_SITE_URL || 'https://soundwaveaudio.co.ke';
-
-// ============================================================================
-// FETCH HELPERS
+// FETCH HELPERS (unchanged)
 // ============================================================================
 
 async function fetchWithRetry(url, retries = 3, timeout = 10000) {
   for (let i = 0; i < retries; i++) {
     try {
       const controller = new AbortController();
-      const timeoutId = setTimeout(() => controller.abort(), timeout);
-      
-      const response = await fetch(url, { 
+      const tid = setTimeout(() => controller.abort(), timeout);
+      const res = await fetch(url, {
         signal: controller.signal,
-        headers: {
-          'Accept': 'application/json',
-          'User-Agent': 'Vite-Sitemap-Generator'
-        }
+        headers: { Accept: 'application/json', 'User-Agent': 'Vite-Sitemap-Generator' },
       });
-      
-      clearTimeout(timeoutId);
-      
-      if (!response.ok) {
-        throw new Error(`HTTP ${response.status}: ${response.statusText}`);
-      }
-      
-      return await response.json();
-    } catch (error) {
-      console.warn(`Attempt ${i + 1}/${retries} failed for ${url}:`, error.message);
-      
-      if (i === retries - 1) {
-        throw error;
-      }
-      
-      await new Promise(resolve => setTimeout(resolve, 1000 * Math.pow(2, i)));
+      clearTimeout(tid);
+      if (!res.ok) throw new Error(`HTTP ${res.status}: ${res.statusText}`);
+      return await res.json();
+    } catch (err) {
+      console.warn(`Attempt ${i + 1}/${retries} failed for ${url}:`, err.message);
+      if (i === retries - 1) throw err;
+      await new Promise(r => setTimeout(r, 1000 * 2 ** i));
     }
   }
 }
@@ -51,65 +54,49 @@ async function fetchWithRetry(url, retries = 3, timeout = 10000) {
 async function fetchAllPages(endpoint, maxPages = 10) {
   const items = [];
   let nextUrl = `${API_URL}${endpoint}`;
-  let pageCount = 0;
-  
-  while (nextUrl && pageCount < maxPages) {
+  let page = 0;
+  while (nextUrl && page < maxPages) {
     try {
       const data = await fetchWithRetry(nextUrl);
-      
-      if (data.results && Array.isArray(data.results)) {
-        items.push(...data.results);
-      }
-      
+      if (Array.isArray(data.results)) items.push(...data.results);
       nextUrl = data.next;
-      pageCount++;
-      
-      console.log(`  ✓ Fetched page ${pageCount} (${items.length} items total)`);
-    } catch (error) {
-      console.error(`  ✗ Failed to fetch page ${pageCount + 1}:`, error.message);
+      page++;
+      console.log(`  ✓ page ${page} (${items.length} items)`);
+    } catch (e) {
+      console.error(`  ✗ page ${page + 1}:`, e.message);
       break;
     }
   }
-  
   return items;
 }
 
 // ============================================================================
-// SITEMAP GENERATION
+// SITEMAP / ROBOTS
 // ============================================================================
 
-function escapeXml(str) {
-  return str
-    .replace(/&/g, '&amp;')
-    .replace(/</g, '&lt;')
-    .replace(/>/g, '&gt;')
-    .replace(/"/g, '&quot;')
-    .replace(/'/g, '&apos;');
-}
+const escapeXml = s =>
+  s.replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;')
+   .replace(/"/g, '&quot;').replace(/'/g, '&apos;');
 
 function generateSitemapXML(routes) {
-  const urls = routes.map(route => {
-    return `  <url>
-    <loc>${escapeXml(SITE_URL)}${escapeXml(route.url)}</loc>
-    <lastmod>${route.lastmod || new Date().toISOString()}</lastmod>
-    <changefreq>${route.changefreq || 'weekly'}</changefreq>
-    <priority>${route.priority || 0.7}</priority>
-  </url>`;
-  }).join('\n');
+  const now = new Date().toISOString();
+  const urls = routes.map(r => `  <url>
+    <loc>${escapeXml(SITE_URL)}${escapeXml(r.url)}</loc>
+    <lastmod>${r.lastmod || now}</lastmod>
+    <changefreq>${r.changefreq || 'weekly'}</changefreq>
+    <priority>${r.priority || 0.7}</priority>
+  </url>`).join('\n');
 
   return `<?xml version="1.0" encoding="UTF-8"?>
 <urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9"
-        xmlns:news="http://www.google.com/schemas/sitemap-news/0.9"
         xmlns:xhtml="http://www.w3.org/1999/xhtml"
-        xmlns:image="http://www.google.com/schemas/sitemap-image/1.1"
-        xmlns:video="http://www.google.com/schemas/sitemap-video/1.1">
+        xmlns:image="http://www.google.com/schemas/sitemap-image/1.1">
 ${urls}
 </urlset>`;
 }
 
 function generateRobotsTxt() {
-  return `# https://www.robotstxt.org/robotstxt.html
-User-agent: *
+  return `User-agent: *
 Allow: /
 Disallow: /admin
 Disallow: /admin/*
@@ -131,146 +118,73 @@ Allow: /
 User-agent: Bingbot
 Allow: /
 
-User-agent: bingbot
-Allow: /
-
 Sitemap: ${SITE_URL}/sitemap.xml`;
 }
 
 async function generateAllRoutes() {
   console.log('\n🗺️  Generating sitemap routes...');
-  console.log(`📡 API: ${API_URL}`);
-  console.log(`🌐 Site: ${SITE_URL}\n`);
-  
+  const now    = new Date().toISOString();
   const routes = [];
-  const now = new Date().toISOString();
-  
-  // Add static routes
+
   routes.push(
-    { url: '/', changefreq: 'daily', priority: 1.0, lastmod: now },
-    { url: '/products', changefreq: 'daily', priority: 0.9, lastmod: now },
-    { url: '/installations', changefreq: 'weekly', priority: 0.85, lastmod: now },
-    { url: '/about', changefreq: 'monthly', priority: 0.8, lastmod: now },
-    { url: '/contact', changefreq: 'monthly', priority: 0.8, lastmod: now },
-    { url: '/terms', changefreq: 'yearly', priority: 0.5, lastmod: now },
-    { url: '/privacy', changefreq: 'yearly', priority: 0.5, lastmod: now },
-    { url: '/shipping-policy', changefreq: 'monthly', priority: 0.6, lastmod: now },
-    { url: '/returns', changefreq: 'monthly', priority: 0.6, lastmod: now }
+    { url: '/',                changefreq: 'daily',   priority: 1.0,  lastmod: now },
+    { url: '/products',        changefreq: 'daily',   priority: 0.9,  lastmod: now },
+    { url: '/installations',   changefreq: 'weekly',  priority: 0.85, lastmod: now },
+    { url: '/about',           changefreq: 'monthly', priority: 0.8,  lastmod: now },
+    { url: '/contact',         changefreq: 'monthly', priority: 0.8,  lastmod: now },
+    { url: '/terms',           changefreq: 'yearly',  priority: 0.5,  lastmod: now },
+    { url: '/privacy',         changefreq: 'yearly',  priority: 0.5,  lastmod: now },
+    { url: '/shipping-policy', changefreq: 'monthly', priority: 0.6,  lastmod: now },
+    { url: '/returns',         changefreq: 'monthly', priority: 0.6,  lastmod: now },
   );
-  
+
   try {
-    // Fetch products
     console.log('📦 Fetching products...');
-    try {
-      const products = await fetchAllPages('/products/?page_size=1000');
-      
-      products.forEach(product => {
-        if (product.slug) {
-          // Ensure lastmod is in ISO 8601 format
-          let lastmod = now;
-          if (product.updated_at) {
-            const date = new Date(product.updated_at);
-            lastmod = isNaN(date.getTime()) ? now : date.toISOString();
-          } else if (product.created_at) {
-            const date = new Date(product.created_at);
-            lastmod = isNaN(date.getTime()) ? now : date.toISOString();
-          }
-          
-          routes.push({
-            url: `/product/${product.slug}`,
-            changefreq: 'weekly',
-            priority: product.is_featured ? 0.9 : 0.8,
-            lastmod: lastmod,
-          });
-        }
+    const products = await fetchAllPages('/products/?page_size=20').catch(() => []);
+    products.forEach(p => {
+      if (!p.slug) return;
+      const d = new Date(p.updated_at || p.created_at);
+      routes.push({
+        url: `/product/${p.slug}`,
+        changefreq: 'weekly',
+        priority: p.is_featured ? 0.9 : 0.8,
+        lastmod: isNaN(d) ? now : d.toISOString(),
       });
-      
-      console.log(`✅ Added ${products.length} product routes\n`);
-    } catch (error) {
-      console.error('❌ Failed to fetch products:', error.message);
-      console.log('⚠️  Continuing without product routes...\n');
-    }
-    
-    // Fetch categories
+    });
+    console.log(`✅ ${products.length} product routes`);
+
     console.log('📂 Fetching categories...');
-    try {
-      const categories = await fetchAllPages('/categories/');
-      
-      categories.forEach(category => {
-        if (category.slug) {
-          routes.push({
-            url: `/products/${category.slug}`,
-            changefreq: 'daily',
-            priority: 0.85,
-            lastmod: now,
-          });
-        }
-      });
-      
-      console.log(`✅ Added ${categories.length} category routes\n`);
-    } catch (error) {
-      console.error('❌ Failed to fetch categories:', error.message);
-      console.log('⚠️  Continuing without category routes...\n');
-    }
-    
-    // Fetch brands
+    const categories = await fetchAllPages('/categories/').catch(() => []);
+    categories.forEach(c => {
+      if (c.slug) routes.push({ url: `/products/${c.slug}`, changefreq: 'daily', priority: 0.85, lastmod: now });
+    });
+    console.log(`✅ ${categories.length} category routes`);
+
     console.log('🏷️  Fetching brands...');
-    try {
-      const brands = await fetchAllPages('/brands/');
-      
-      brands.forEach(brand => {
-        if (brand.slug) {
-          routes.push({
-            url: `/products/brand/${brand.slug}`,
-            changefreq: 'weekly',
-            priority: 0.8,
-            lastmod: now,
-          });
-        }
+    const brands = await fetchAllPages('/brands/').catch(() => []);
+    brands.forEach(b => {
+      if (b.slug) routes.push({ url: `/products/brand/${b.slug}`, changefreq: 'weekly', priority: 0.8, lastmod: now });
+    });
+    console.log(`✅ ${brands.length} brand routes`);
+
+    console.log('🔧 Fetching installations...');
+    const jobs = await fetchAllPages('/installations/jobs/?page_size=1000').catch(() => []);
+    jobs.forEach(j => {
+      if (!j.slug) return;
+      const d = new Date(j.updated_at || j.job_date);
+      routes.push({
+        url: `/installations/${j.slug}`,
+        changefreq: 'monthly',
+        priority: j.is_featured ? 0.85 : 0.75,
+        lastmod: isNaN(d) ? now : d.toISOString(),
       });
-      
-      console.log(`✅ Added ${brands.length} brand routes\n`);
-    } catch (error) {
-      console.error('❌ Failed to fetch brands:', error.message);
-      console.log('⚠️  Continuing without brand routes...\n');
-    }
-
-    // Fetch installation jobs
-    console.log('🔧 Fetching installation jobs...');
-    try {
-      const jobs = await fetchAllPages('/installations/jobs/?page_size=1000');
-
-      jobs.forEach(job => {
-        if (job.slug) {
-          let lastmod = now;
-          if (job.updated_at) {
-            const date = new Date(job.updated_at);
-            lastmod = isNaN(date.getTime()) ? now : date.toISOString();
-          } else if (job.job_date) {
-            const date = new Date(job.job_date);
-            lastmod = isNaN(date.getTime()) ? now : date.toISOString();
-          }
-
-          routes.push({
-            url: `/installations/${job.slug}`,
-            changefreq: 'monthly',
-            priority: job.is_featured ? 0.85 : 0.75,
-            lastmod,
-          });
-        }
-      });
-
-      console.log(`✅ Added ${jobs.length} installation job routes\n`);
-    } catch (error) {
-      console.error('❌ Failed to fetch installation jobs:', error.message);
-      console.log('⚠️  Continuing without installation job routes...\n');
-    } 
-  } catch (error) {
-    console.error('❌ Unexpected error during route generation:', error);
+    });
+    console.log(`✅ ${jobs.length} installation routes`);
+  } catch (e) {
+    console.error('❌ Unexpected error:', e);
   }
-  
-  console.log(`📊 Total routes: ${routes.length}\n`);
-  
+
+  console.log(`\n📊 Total sitemap URLs: ${routes.length}\n`);
   return routes;
 }
 
@@ -281,181 +195,131 @@ async function generateAllRoutes() {
 function customSitemapPlugin() {
   let config;
   let routes = [];
-  
+
   return {
     name: 'custom-sitemap-plugin',
-    configResolved(resolvedConfig) {
-      config = resolvedConfig;
-    },
+    configResolved(c) { config = c; },
     async buildStart() {
-      // Generate routes at build start
-      if (config.command === 'build') {
-        routes = await generateAllRoutes();
-      }
+      if (config.command === 'build') routes = await generateAllRoutes();
     },
     async closeBundle() {
-      // Write sitemap and robots.txt after build
-      if (config.command === 'build') {
-        const outDir = config.build.outDir || 'dist';
-        
-        console.log('📝 Writing sitemap.xml...');
-        const sitemapContent = generateSitemapXML(routes);
-        fs.writeFileSync(path.join(outDir, 'sitemap.xml'), sitemapContent);
-        console.log(`✅ Sitemap written with ${routes.length} URLs\n`);
-        
-        console.log('📝 Writing robots.txt...');
-        const robotsContent = generateRobotsTxt();
-        fs.writeFileSync(path.join(outDir, 'robots.txt'), robotsContent);
-        console.log('✅ Robots.txt written\n');
-      }
-    }
+      if (config.command !== 'build') return;
+      const outDir = config.build.outDir || 'dist';
+      fs.writeFileSync(path.join(outDir, 'sitemap.xml'), generateSitemapXML(routes));
+      console.log(`✅ sitemap.xml written (${routes.length} URLs)`);
+      fs.writeFileSync(path.join(outDir, 'robots.txt'), generateRobotsTxt());
+      console.log('✅ robots.txt written');
+    },
   };
 }
 
 // ============================================================================
-// VITE CONFIG - FIXED FOR REACT DUPLICATION ISSUE
+// VITE CONFIG
 // ============================================================================
 
 export default defineConfig({
   plugins: [
     react({
-      // Ensure React is properly deduplicated
       exclude: /\.stories\.(t|j)sx?$/,
       include: '**/*.{jsx,tsx}',
     }),
     tailwindcss(),
     customSitemapPlugin(),
   ],
-  
+
+  // vite-react-ssg reads this key to know which pages to pre-render.
+  // Identical shape to the vite-ssg `ssgOptions` — no changes needed here.
+  ssgOptions: {
+    script: 'async',            // defer hydration script for performance
+    formatting: 'minify',       // minify the generated HTML
+    includedRoutes: async (paths, routes) => {
+      const staticPaths = [
+        '/',
+        '/products',
+        '/about',
+        '/contact',
+        '/installations',
+        '/terms',
+        '/privacy',
+        '/shipping-policy',
+        '/returns',
+      ];
+
+      try {
+        const products = await fetchAllPages('/products/?page_size=20').catch(() => []);
+        products.forEach(p => { if (p.slug) staticPaths.push(`/product/${p.slug}`); });
+
+        const categories = await fetchAllPages('/categories/').catch(() => []);
+        categories.forEach(c => { if (c.slug) staticPaths.push(`/products/${c.slug}`); });
+
+        const brands = await fetchAllPages('/brands/').catch(() => []);
+        brands.forEach(b => { if (b.slug) staticPaths.push(`/products/brand/${b.slug}`); });
+      } catch (_) { /* fallback to static-only */ }
+
+      return staticPaths;
+    },
+  },
+
   resolve: {
     alias: {
       '@': path.resolve(__dirname, './src'),
-      // Force single React instance
-      'react': path.resolve(__dirname, 'node_modules/react'),
+      'react':     path.resolve(__dirname, 'node_modules/react'),
       'react-dom': path.resolve(__dirname, 'node_modules/react-dom'),
     },
     dedupe: ['react', 'react-dom', 'react-redux', '@reduxjs/toolkit'],
   },
-  
+
   optimizeDeps: {
     include: [
-      'react', 
-      'react-dom', 
-      'react-router-dom', 
-      'react-redux', 
-      '@reduxjs/toolkit',
-      'react-hook-form',
-      '@hookform/resolvers',
-      'zod',
-      'framer-motion',
-      'lucide-react',
-      'axios',
-      'clsx',
-      'tailwind-merge',
-      'class-variance-authority'
+      'react', 'react-dom', 'react-router-dom',
+      'react-redux', '@reduxjs/toolkit',
+      'react-helmet-async',
+      'react-hook-form', '@hookform/resolvers', 'zod',
+      'framer-motion', 'lucide-react', 'axios',
+      'clsx', 'tailwind-merge', 'class-variance-authority',
     ],
-    exclude: [],
-    esbuildOptions: {
-      target: 'es2020',
-    },
+    esbuildOptions: { target: 'es2020' },
   },
-  
+
   build: {
     sourcemap: false,
     minify: 'terser',
     terserOptions: {
-      compress: {
-        drop_console: true,
-        drop_debugger: true,
-      },
+      compress: { drop_console: true, drop_debugger: true },
     },
     rollupOptions: {
       output: {
         manualChunks: (id) => {
-          // CRITICAL: Keep all React-related packages together to avoid hook mismatches
-          if (id.includes('node_modules/react/') || 
-              id.includes('node_modules/react-dom/') || 
-              id.includes('node_modules/scheduler/') ||
-              id.includes('node_modules/react-router/') ||
-              id.includes('node_modules/react-router-dom/')) {
+          if (/node_modules\/(react|react-dom|scheduler|react-router(?:-dom)?)\//.test(id))
             return 'vendor-react';
-          }
-          
-          // Redux - must be separate but ensure it uses the same React instance
-          if (id.includes('node_modules/redux/') || 
-              id.includes('node_modules/react-redux/') || 
-              id.includes('node_modules/@reduxjs/toolkit/') ||
-              id.includes('node_modules/immer/') ||
-              id.includes('node_modules/redux-thunk/')) {
+          if (/node_modules\/(redux|react-redux|@reduxjs\/toolkit|immer|redux-thunk)\//.test(id))
             return 'vendor-redux';
-          }
-          
-          // UI Components - split by type
-          if (id.includes('node_modules/lucide-react/')) {
+          if (id.includes('node_modules/react-helmet-async/'))
+            return 'vendor-react';
+          if (id.includes('node_modules/lucide-react/'))
             return 'vendor-ui-icons';
-          }
-          
-          if (id.includes('node_modules/@radix-ui/')) {
-            // Group all Radix UI components together
+          if (id.includes('node_modules/@radix-ui/'))
             return 'vendor-ui-radix';
-          }
-          
-          // Form libraries
-          if (id.includes('node_modules/react-hook-form/') || 
-              id.includes('node_modules/@hookform/') || 
-              id.includes('node_modules/zod/')) {
+          if (/node_modules\/(react-hook-form|@hookform|zod)\//.test(id))
             return 'vendor-forms';
-          }
-          
-          // Animation
-          if (id.includes('node_modules/framer-motion/')) {
+          if (id.includes('node_modules/framer-motion/'))
             return 'vendor-animation';
-          }
-          
-          // API and utilities
-          if (id.includes('node_modules/axios/')) {
+          if (id.includes('node_modules/axios/'))
             return 'vendor-api';
-          }
-          
-          if (id.includes('node_modules/clsx/') || 
-              id.includes('node_modules/tailwind-merge/') || 
-              id.includes('node_modules/class-variance-authority/')) {
+          if (/node_modules\/(clsx|tailwind-merge|class-variance-authority)\//.test(id))
             return 'vendor-utils';
-          }
-          
-          if (id.includes('node_modules/vaul/')) {
+          if (id.includes('node_modules/vaul/'))
             return 'vendor-vaul';
-          }
-          
-          // Only create a separate chunk for other dependencies if they're large enough
-          if (id.includes('node_modules')) {
-            // Check if it's a significant size by looking at common large packages
-            if (id.includes('node_modules/@emotion/') ||
-                id.includes('node_modules/@babel/') ||
-                id.includes('node_modules/@swc/')) {
-              return 'vendor-other';
-            }
-            // Otherwise, include with main vendor chunk to avoid too many chunks
-          }
         },
-        chunkFileNames: 'assets/js/[name]-[hash].js',
-        entryFileNames: 'assets/js/[name]-[hash].js',
-        assetFileNames: 'assets/[ext]/[name]-[hash].[ext]',
+        chunkFileNames:  'assets/js/[name]-[hash].js',
+        entryFileNames:  'assets/js/[name]-[hash].js',
+        assetFileNames:  'assets/[ext]/[name]-[hash].[ext]',
       },
     },
     chunkSizeWarningLimit: 600,
-    commonjsOptions: {
-      transformMixedEsModules: true,
-    },
+    commonjsOptions: { transformMixedEsModules: true },
   },
-  
-  server: {
-    port: 5173,
-    strictPort: false,
-  },
-  
-  preview: {
-    port: 4173,
-    strictPort: false,
-  },
+
+  server:  { port: 5173, strictPort: false },
+  preview: { port: 4173, strictPort: false },
 });

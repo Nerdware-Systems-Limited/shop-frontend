@@ -236,20 +236,157 @@ const ProductDetails = () => {
   };
 
   const handleShare = async () => {
-    if (navigator.share) {
+    const url =
+      product.canonical_url ||
+      window.location.href;
+
+    const title =
+      product.meta_title ||
+      product.name;
+
+    const text =
+      product.meta_description ||
+      product.short_description ||
+      product.description?.substring(0, 160) ||
+      "Check this out";
+
+    const encodedUrl = encodeURIComponent(url);
+    const encodedText = encodeURIComponent(text);
+    const encodedTitle = encodeURIComponent(title);
+
+    const isMobile = /Android|iPhone|iPad|iPod/i.test(navigator.userAgent);
+
+    const shareLinks = {
+      whatsapp: isMobile
+        ? `whatsapp://send?text=${encodedTitle}%20${encodedUrl}`
+        : `https://web.whatsapp.com/send?text=${encodedTitle}%20${encodedUrl}`,
+      facebook: `https://www.facebook.com/sharer/sharer.php?u=${encodedUrl}`,
+      twitter: `https://twitter.com/intent/tweet?text=${encodedText}&url=${encodedUrl}`,
+      linkedin: `https://www.linkedin.com/sharing/share-offsite/?url=${encodedUrl}`,
+      telegram: `https://t.me/share/url?url=${encodedUrl}&text=${encodedText}`,
+      email: `mailto:?subject=${encodedTitle}&body=${encodedText}%20${encodedUrl}`,
+    };
+
+    // 🔥 TRACKING
+    const trackShare = (platform) => {
+      console.log("Shared via:", platform);
+
+      // Example analytics hooks
+      // window.gtag?.("event", "share", {
+      //   method: platform,
+      //   content_type: "product",
+      //   item_id: product.id,
+      // });
+
+      // fetch("/api/track-share", { method: "POST", body: JSON.stringify(...) });
+    };
+
+    // 📋 COPY FALLBACK
+    const copyToClipboard = async () => {
       try {
-        await navigator.share({
-          title: product.name,
-          text: product.meta_description || product.description?.substring(0, 160),
-          url: window.location.href,
-        });
+        await navigator.clipboard.writeText(url);
+        showNotification("Link copied!", "success");
+        trackShare("copy");
       } catch (err) {
-        console.log('Share failed:', err);
+        console.error("Copy failed:", err);
       }
-    } else {
-      navigator.clipboard.writeText(window.location.href);
-      showNotification('Link copied to clipboard!', 'success');
+    };
+
+    // 🔗 OPEN LINK
+    const openLink = (link, platform) => {
+      window.open(link, "_blank", "noopener,noreferrer");
+      trackShare(platform);
+    };
+
+    // 📱 1. TRY NATIVE SHARE FIRST (BEST UX)
+    if (navigator.share && isMobile) {
+      try {
+        await navigator.share({ title, text, url });
+        trackShare("native");
+        return;
+      } catch (err) {
+        console.log("Native share cancelled or failed");
+      }
     }
+
+    // 🧠 2. FALLBACK → SHOW CUSTOM SHARE MODAL
+    const options = [
+      {
+        name: "WhatsApp",
+        icon: "🟢",
+        action: () => openLink(shareLinks.whatsapp, "whatsapp"),
+      },
+      {
+        name: "Facebook",
+        icon: "📘",
+        action: () => openLink(shareLinks.facebook, "facebook"),
+      },
+      {
+        name: "Twitter",
+        icon: "🐦",
+        action: () => openLink(shareLinks.twitter, "twitter"),
+      },
+      {
+        name: "LinkedIn",
+        icon: "💼",
+        action: () => openLink(shareLinks.linkedin, "linkedin"),
+      },
+      {
+        name: "Telegram",
+        icon: "📨",
+        action: () => openLink(shareLinks.telegram, "telegram"),
+      },
+      {
+        name: "Copy Link",
+        icon: "🔗",
+        action: copyToClipboard,
+      },
+    ];
+
+    // 🎨 SIMPLE MODAL (NO PROMPT)
+    const modal = document.createElement("div");
+    modal.className =
+      "fixed inset-0 z-50 flex items-end sm:items-center justify-center bg-black/50";
+
+    modal.innerHTML = `
+      <div class="bg-white w-full sm:max-w-md rounded-t-2xl sm:rounded-2xl p-4">
+        <div class="flex justify-between items-center mb-4">
+          <h3 class="text-lg font-semibold">Share Product</h3>
+          <button id="closeShare" class="text-gray-500 text-xl">&times;</button>
+        </div>
+
+        <div class="grid grid-cols-3 gap-4">
+          ${options
+            .map(
+              (opt, i) => `
+            <button data-index="${i}" 
+              class="flex flex-col items-center gap-2 p-3 rounded-xl hover:bg-gray-100 transition">
+              <span class="text-2xl">${opt.icon}</span>
+              <span class="text-xs">${opt.name}</span>
+            </button>
+          `
+            )
+            .join("")}
+        </div>
+      </div>
+    `;
+
+    document.body.appendChild(modal);
+
+    // ❌ CLOSE
+    modal.querySelector("#closeShare").onclick = () => modal.remove();
+    modal.onclick = (e) => {
+      if (e.target === modal) modal.remove();
+    };
+
+    // 🎯 ACTIONS
+    modal.querySelectorAll("button[data-index]").forEach((btn) => {
+      btn.onclick = () => {
+        const index = btn.getAttribute("data-index");
+        options[index].action();
+        modal.remove();
+      };
+    });
   };
 
   const handleCallNow = () => {
@@ -305,6 +442,7 @@ const ProductDetails = () => {
   const reviewCount = product.review_count || 0;
   const primaryImage = product.images?.find(img => img.is_primary) || product.images?.[0];
   const mainImageUrl = getImageUrl(primaryImage);
+  const shortDesc = product.short_description || product.description;
 
   // console.log(product)
 
@@ -501,13 +639,13 @@ const ProductDetails = () => {
               )}
 
               {/* Short Description */}
-              {product.description && (
+              {shortDesc && (
                 <div className="border-t border-black pt-4 sm:pt-6">
                   <p className="text-[10px] sm:text-xs leading-relaxed text-gray-600">
-                    {product.description.substring(0, 250)}
-                    {product.description.length > 250 && '...'}
+                    {shortDesc.substring(0, 250)}
+                    {shortDesc.length > 250 && '...'}
                   </p>
-                  {product.description.length > 250 && (
+                  {shortDesc.length > 250 && (
                     <button
                       onClick={() => {
                         setActiveTab('description');

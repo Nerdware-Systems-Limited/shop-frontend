@@ -7,9 +7,12 @@
  * - Minimum 500+ words for SEO value
  * - Semantic HTML (h1, h2, p, etc.) for better indexing
  */
+import DefaultSEO from './DefaultSEO';
 
 const About = () => {
   return (
+    <>
+    <DefaultSEO />
     <div className="min-h-screen bg-white">
       {/* Hero Section */}
       <section className="relative bg-gradient-to-br from-gray-900 via-gray-800 to-black text-white py-20 lg:py-24">
@@ -244,6 +247,7 @@ const About = () => {
 
       </section>
     </div>
+    </>
   );
 };
 

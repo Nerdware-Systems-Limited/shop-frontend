@@ -1,62 +1,119 @@
 <!doctype html>
-<html lang="en" prefix="og: https://ogp.me/ns# product: https://ogp.me/ns/product#">
+<html lang="en-KE" prefix="og: https://ogp.me/ns# product: https://ogp.me/ns/product#">
   <head>
     <!-- ==================== CRITICAL PERFORMANCE ==================== -->
+    <!--
+      WHY THIS FILE IS LEAN:
+      All page-specific meta tags (title, description, og:*, twitter:*, JSON-LD
+      breadcrumbs, product schemas, FAQ schemas) are injected by react-helmet-async
+      at runtime AND pre-rendered into each page's static HTML by vite-ssg at
+      build time.
+
+      Keeping page-specific meta here DUPLICATES what helmet injects, which causes:
+        • Google Search Console "duplicate meta" warnings
+        • Social bots reading the wrong (static) OG tags instead of per-page ones
+        • JSON-LD entities appearing twice in the document graph
+
+      ONLY keep in index.html:
+        1. Charset / viewport / compat (must be first, before any content)
+        2. DNS prefetch / preconnect / resource hints (performance, not SEO)
+        3. Favicons & web app manifest (static, never change per page)
+        4. Global/site-wide JSON-LD (Organization, LocalBusiness, WebSite)
+           that is the SAME on every page and should not be duplicated per page
+        5. Analytics & tag manager scripts
+        6. Security / mobile hints that are truly global
+    -->
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover" />
     <meta http-equiv="X-UA-Compatible" content="IE=edge" />
-    
-    <!-- DNS Prefetch & Preconnect for Performance -->
-    <link rel="dns-prefetch" href="https://fonts.googleapis.com" />
-    <link rel="dns-prefetch" href="https://fonts.gstatic.com" />
-    <link rel="dns-prefetch" href="https://cdnjs.cloudflare.com" />
-    <link rel="dns-prefetch" href="https://kiarie-bucket.s3.amazonaws.com" />
-    <link rel="preconnect" href="https://fonts.googleapis.com" crossorigin />
-    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
-    <link rel="preconnect" href="https://kiarie-bucket.s3.amazonaws.com" />
-    
-    <!-- Preload Critical Assets -->
-    <link rel="preload" href="/src/main.jsx" as="script" crossorigin />
-    <link rel="preload" href="https://fonts.googleapis.com/css2?family=Manrope:wght@200;300;400;500;600;700;800&display=swap" as="style" />
 
-    <!-- ==================== CORE SEO META TAGS ==================== -->
-    <!-- NOTE: Dynamic meta tags (title, description, OG, etc.) are managed by react-head in components -->
-    <!-- Only static/global meta tags remain here -->
+    <!-- ==================== RESOURCE HINTS ========================= -->
+    <link rel="dns-prefetch"  href="https://fonts.googleapis.com" />
+    <link rel="dns-prefetch"  href="https://fonts.gstatic.com" />
+    <link rel="dns-prefetch"  href="https://cdnjs.cloudflare.com" />
+    <link rel="dns-prefetch"  href="https://kiarie-bucket.s3.amazonaws.com" />
+    <link rel="dns-prefetch"  href="https://shop.nerdwaretechnologies.com" />
+    <link rel="preconnect"    href="https://fonts.googleapis.com" crossorigin />
+    <link rel="preconnect"    href="https://fonts.gstatic.com" crossorigin />
+    <link rel="preconnect"    href="https://kiarie-bucket.s3.amazonaws.com" />
+    <link rel="preconnect"    href="https://shop.nerdwaretechnologies.com" crossorigin />
+
+    <!-- Preload critical font (non-render-blocking) -->
+    <link rel="preload" as="style"
+          href="https://fonts.googleapis.com/css2?family=Manrope:wght@200;300;400;500;600;700;800&display=swap" />
+    <link rel="stylesheet"
+          href="https://fonts.googleapis.com/css2?family=Manrope:wght@200;300;400;500;600;700;800&display=swap"
+          media="print" onload="this.media='all'" />
+    <noscript>
+      <link rel="stylesheet"
+            href="https://fonts.googleapis.com/css2?family=Manrope:wght@200;300;400;500;600;700;800&display=swap" />
+    </noscript>
+
+    <!-- ==================== STATIC / GLOBAL META =================== -->
+    <!--
+      author is global — it never changes per page.
+      Everything else (title, description, og:*, canonical) is handled by Helmet.
+    -->
     <meta name="author" content="Sound Wave Audio" />
-    <meta name="google-site-verification" content="dsAO8AGRcPATu-8LaOdSMLbEHHJUVM-nGNnIdT-2inI" />
 
-    <!-- ==================== BUSINESS & LOCAL SEO ==================== -->
-    <meta name="geo.region" content="KE-110" />
+    <!-- ==================== WEBMASTER VERIFICATION ================= -->
+    <meta name="google-site-verification" content="dsAO8AGRcPATu-8LaOdSMLbEHHJUVM-nGNnIdT-2inI" />
+    <meta name="msvalidate.01"            content="F9EBAC30A3D147993E71412E6A8C9661" />
+
+    <!-- ==================== BUSINESS / LOCAL SEO =================== -->
+    <meta name="geo.region"   content="KE-110" />
     <meta name="geo.placename" content="Nairobi" />
     <meta name="geo.position" content="-1.2921;36.8219" />
-    <meta name="ICBM" content="-1.2921, 36.8219" />
-    
-    <!-- ==================== FAVICON & ICONS ==================== -->
-    <link rel="apple-touch-icon-precomposed" sizes="57x57" href="/apple-touch-icon-57x57.png" />
-    <link rel="apple-touch-icon-precomposed" sizes="114x114" href="/apple-touch-icon-114x114.png" />
-    <link rel="apple-touch-icon-precomposed" sizes="72x72" href="/apple-touch-icon-72x72.png" />
-    <link rel="apple-touch-icon-precomposed" sizes="144x144" href="/apple-touch-icon-144x144.png" />
-    <link rel="apple-touch-icon-precomposed" sizes="60x60" href="/apple-touch-icon-60x60.png" />
-    <link rel="apple-touch-icon-precomposed" sizes="120x120" href="/apple-touch-icon-120x120.png" />
-    <link rel="apple-touch-icon-precomposed" sizes="76x76" href="/apple-touch-icon-76x76.png" />
-    <link rel="apple-touch-icon-precomposed" sizes="152x152" href="/apple-touch-icon-152x152.png" />
-    <link rel="icon" type="image/png" href="/favicon-196x196.png" sizes="196x196" />
-    <link rel="icon" type="image/png" href="/favicon-96x96.png" sizes="96x96" />
-    <link rel="icon" type="image/png" href="/favicon-32x32.png" sizes="32x32" />
-    <link rel="icon" type="image/png" href="/favicon-16x16.png" sizes="16x16" />
-    <link rel="icon" type="image/png" href="/favicon-128.png" sizes="128x128" />
-    <link rel="manifest" href="/site.webmanifest" />
-    <meta name="theme-color" content="#000000" />
+    <meta name="ICBM"         content="-1.2921, 36.8219" />
+
+    <!-- ==================== MOBILE / PWA ========================== -->
+    <meta name="theme-color"                  content="#000000" />
     <meta name="apple-mobile-web-app-capable" content="yes" />
     <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent" />
-    <meta name="apple-mobile-web-app-title" content="Sound Wave Audio" />
-    <meta name="application-name" content="Sound Wave Audio" />
-    <meta name="msapplication-TileColor" content="#000000" />
-    <meta name="msapplication-config" content="/browserconfig.xml" />
+    <meta name="apple-mobile-web-app-title"   content="Sound Wave Audio" />
+    <meta name="application-name"             content="Sound Wave Audio" />
+    <meta name="mobile-web-app-capable"       content="yes" />
+    <meta name="HandheldFriendly"             content="true" />
+    <meta name="format-detection"             content="telephone=yes" />
 
-    <!-- ==================== GLOBAL STRUCTURED DATA (JSON-LD) ==================== -->
-    <!-- NOTE: These are GLOBAL schemas that apply to the entire site -->
-    <!-- Page-specific schemas (Product, BreadcrumbList, etc.) are in components -->
+    <!-- ==================== SECURITY ============================== -->
+    <meta http-equiv="Content-Security-Policy" content="upgrade-insecure-requests" />
+    <meta name="referrer" content="strict-origin-when-cross-origin" />
+
+    <!-- ==================== FAVICONS ============================== -->
+    <link rel="apple-touch-icon-precomposed" sizes="57x57"   href="/apple-touch-icon-57x57.png" />
+    <link rel="apple-touch-icon-precomposed" sizes="114x114" href="/apple-touch-icon-114x114.png" />
+    <link rel="apple-touch-icon-precomposed" sizes="72x72"   href="/apple-touch-icon-72x72.png" />
+    <link rel="apple-touch-icon-precomposed" sizes="144x144" href="/apple-touch-icon-144x144.png" />
+    <link rel="apple-touch-icon-precomposed" sizes="60x60"   href="/apple-touch-icon-60x60.png" />
+    <link rel="apple-touch-icon-precomposed" sizes="120x120" href="/apple-touch-icon-120x120.png" />
+    <link rel="apple-touch-icon-precomposed" sizes="76x76"   href="/apple-touch-icon-76x76.png" />
+    <link rel="apple-touch-icon-precomposed" sizes="152x152" href="/apple-touch-icon-152x152.png" />
+    <link rel="icon" type="image/png" href="/favicon-196x196.png" sizes="196x196" />
+    <link rel="icon" type="image/png" href="/favicon-96x96.png"   sizes="96x96" />
+    <link rel="icon" type="image/png" href="/favicon-32x32.png"   sizes="32x32" />
+    <link rel="icon" type="image/png" href="/favicon-16x16.png"   sizes="16x16" />
+    <link rel="icon" type="image/png" href="/favicon-128.png"     sizes="128x128" />
+    <link rel="manifest" href="/site.webmanifest" />
+
+    <!-- ==================== MS TILES ============================== -->
+    <meta name="msapplication-TileColor"            content="#000000" />
+    <meta name="msapplication-TileImage"            content="/mstile-144x144.png" />
+    <meta name="msapplication-config"               content="/browserconfig.xml" />
+    <meta name="msapplication-square70x70logo"      content="/mstile-70x70.png" />
+    <meta name="msapplication-square150x150logo"    content="/mstile-150x150.png" />
+    <meta name="msapplication-wide310x150logo"      content="/mstile-310x150.png" />
+    <meta name="msapplication-square310x310logo"    content="/mstile-310x310.png" />
+
+    <!-- ==================== GLOBAL JSON-LD ======================== -->
+    <!--
+      These schemas describe the SITE as a whole.  They are identical on every
+      page and must NOT be duplicated in per-page SEO components.
+
+      Page-specific schemas (BreadcrumbList, Product, CollectionPage, FAQPage,
+      WebPage, AboutPage, ContactPage) belong in each page's Helmet block and
+      are therefore NOT here.
+    -->
     <script type="application/ld+json">
     {
       "@context": "https://schema.org",
@@ -75,9 +132,7 @@
             "height": 60,
             "caption": "Sound Wave Audio Logo"
           },
-          "image": {
-            "@id": "https://soundwaveaudio.co.ke/#logo"
-          },
+          "image": { "@id": "https://soundwaveaudio.co.ke/#logo" },
           "description": "Kenya's premier car audio specialist offering professional installation, premium brands, and expert service",
           "email": "info@soundwaveaudio.co.ke",
           "telephone": "+254-724-013-583",
@@ -117,7 +172,7 @@
           "openingHoursSpecification": [
             {
               "@type": "OpeningHoursSpecification",
-              "dayOfWeek": ["Monday", "Tuesday", "Wednesday", "Thursday", "Friday", "Saturday"],
+              "dayOfWeek": ["Monday","Tuesday","Wednesday","Thursday","Friday","Saturday"],
               "opens": "08:00",
               "closes": "18:00"
             }
@@ -126,7 +181,9 @@
             "@type": "AggregateRating",
             "ratingValue": "4.8",
             "reviewCount": "247"
-          }
+          },
+          "paymentAccepted": "M-Pesa, Cash, Card",
+          "currenciesAccepted": "KES"
         },
         {
           "@type": "WebSite",
@@ -134,9 +191,8 @@
           "url": "https://soundwaveaudio.co.ke/",
           "name": "Sound Wave Audio",
           "description": "Premium Car Audio Systems and Professional Installation in Nairobi Kenya",
-          "publisher": {
-            "@id": "https://soundwaveaudio.co.ke/#organization"
-          },
+          "inLanguage": "en-KE",
+          "publisher": { "@id": "https://soundwaveaudio.co.ke/#organization" },
           "potentialAction": {
             "@type": "SearchAction",
             "target": {
@@ -145,89 +201,12 @@
             },
             "query-input": "required name=search_term_string"
           }
-        },
-        {
-          "@type": "Store",
-          "name": "Sound Wave Audio",
-          "telephone": "+254724013583",
-          "address": {
-            "@type": "PostalAddress",
-            "streetAddress": "Park Road Business Center, Ring Road, Ngara",
-            "addressLocality": "Nairobi",
-            "addressCountry": "KE"
-          },
-          "paymentAccepted": "M-Pesa, Cash, Card",
-          "currenciesAccepted": "KES",
-          "hasOfferCatalog": {
-            "@type": "OfferCatalog",
-            "name": "Car Audio Equipment",
-            "itemListElement": [
-              {
-                "@type": "Offer",
-                "itemOffered": {
-                  "@type": "Product",
-                  "name": "Car Speakers"
-                }
-              },
-              {
-                "@type": "Offer",
-                "itemOffered": {
-                  "@type": "Product",
-                  "name": "Subwoofers"
-                }
-              },
-              {
-                "@type": "Offer",
-                "itemOffered": {
-                  "@type": "Product",
-                  "name": "Amplifiers"
-                }
-              },
-              {
-                "@type": "Offer",
-                "itemOffered": {
-                  "@type": "Product",
-                  "name": "Head Units"
-                }
-              }
-            ]
-          }
         }
       ]
     }
     </script>
 
-    <!-- ==================== SECURITY HEADERS ==================== -->
-    <meta http-equiv="Content-Security-Policy" content="upgrade-insecure-requests" />
-    <meta name="referrer" content="strict-origin-when-cross-origin" />
-
-    <!-- ==================== MOBILE OPTIMIZATION ==================== -->
-    <meta name="format-detection" content="telephone=yes" />
-    <meta name="mobile-web-app-capable" content="yes" />
-    <meta name="HandheldFriendly" content="true" />
-    
-    <!-- ==================== PRELOAD FONTS ==================== -->
-    <link rel="preload" as="style" href="https://fonts.googleapis.com/css2?family=Manrope:wght@200;300;400;500;600;700;800&display=swap" />
-    <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Manrope:wght@200;300;400;500;600;700;800&display=swap" media="print" onload="this.media='all'" />
-    <noscript>
-      <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Manrope:wght@200;300;400;500;600;700;800&display=swap" />
-    </noscript>
-
-    <!-- ==================== MICROSOFT TILES ==================== -->
-    <meta name="msapplication-TileImage" content="/mstile-144x144.png" />
-    <meta name="msapplication-square70x70logo" content="/mstile-70x70.png" />
-    <meta name="msapplication-square150x150logo" content="/mstile-150x150.png" />
-    <meta name="msapplication-wide310x150logo" content="/mstile-310x150.png" />
-    <meta name="msapplication-square310x310logo" content="/mstile-310x310.png" />
-    
-    <!-- ==================== BING WEBMASTER TOOLS ==================== -->
-    <meta name="msvalidate.01" content="F9EBAC30A3D147993E71412E6A8C9661" />
-
-    <!-- ==================== PERFORMANCE HINTS ==================== -->
-    <link rel="preconnect" href="https://shop.nerdwaretechnologies.com" crossorigin />
-    <link rel="dns-prefetch" href="https://shop.nerdwaretechnologies.com" />
-    
-    <!-- Google tag (gtag.js) -->
+    <!-- ==================== ANALYTICS ============================ -->
     <script async src="https://www.googletagmanager.com/gtag/js?id=G-S5ZY85VW0Q"></script>
     <script>
       window.dataLayer = window.dataLayer || [];
@@ -236,35 +215,34 @@
       gtag('config', 'G-S5ZY85VW0Q');
     </script>
   </head>
-  
+
   <body>
-    <!-- Skip to main content for accessibility -->
-    <a href="#root" class="sr-only focus:not-sr-only focus:absolute focus:top-4 focus:left-4 focus:z-50 focus:px-4 focus:py-2 focus:bg-black focus:text-white">
+    <!-- Accessibility: skip link -->
+    <a href="#root"
+       class="sr-only focus:not-sr-only focus:absolute focus:top-4 focus:left-4 focus:z-50 focus:px-4 focus:py-2 focus:bg-black focus:text-white">
       Skip to main content
     </a>
-    
-    <!-- Main Application Mount Point -->
+
+    <!-- App mount -->
     <div id="root"></div>
-    
-    <!-- Noscript Fallback -->
+
+    <!-- Noscript fallback -->
     <noscript>
-      <div style="padding: 2rem; text-align: center; font-family: system-ui, -apple-system, sans-serif;">
+      <div style="padding:2rem;text-align:center;font-family:system-ui,-apple-system,sans-serif;">
         <h1>Sound Wave Audio</h1>
-        <p>JavaScript is required to view this website. Please enable JavaScript in your browser settings.</p>
-        <p>For assistance, call us at <a href="tel:+254724013583">+254 724 013 583</a></p>
+        <p>JavaScript is required. Please enable it in your browser settings.</p>
+        <p>Call us: <a href="tel:+254724013583">+254 724 013 583</a></p>
       </div>
     </noscript>
-    
-    <!-- Module Script -->
+
+    <!-- Entry point (replaced by vite-ssg's generated scripts at build time) -->
     <script type="module" src="/src/main.jsx"></script>
-    
-    <!-- Service Worker Registration (Optional - for PWA) -->
+
+    <!-- PWA service worker -->
     <script>
       if ('serviceWorker' in navigator) {
         window.addEventListener('load', () => {
-          navigator.serviceWorker.register('/sw.js').catch(() => {
-            // Service worker registration failed, continue without it
-          });
+          navigator.serviceWorker.register('/sw.js').catch(() => {});
         });
       }
     </script>

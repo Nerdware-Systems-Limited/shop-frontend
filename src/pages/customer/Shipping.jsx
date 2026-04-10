@@ -1,7 +1,7 @@
 import React, { useState, useEffect, useCallback } from "react";
 import { useDispatch, useSelector } from "react-redux";
 import { saveShippingAddress } from "../../actions/cartActions";
-import { useNavigate } from "react-router-dom";
+import { useNavigate, useOutletContext } from "react-router-dom";
 import CheckoutSteps from "../../components/checkout/CheckoutSteps";
 import { 
   listAddresses,
@@ -13,11 +13,13 @@ import { Plus, MapPin, Check, ArrowRight, ArrowLeft, Edit2, Trash2, AlertCircle 
 import { AddressModal } from "../../components/checkout/AddressModal";
 import { Alert, AlertDescription } from "@/components/ui/alert";
 
-function Shipping({ setCompleted, completed }) {
+
+function Shipping() {
   const dispatch = useDispatch();
   const navigate = useNavigate();
 
   // Local state
+  const { setCompleted, completed } = useOutletContext()
   const [modalOpen, setModalOpen] = useState(false);
   const [selectedAddressId, setSelectedAddressId] = useState(null);
   const [editingAddress, setEditingAddress] = useState(null);

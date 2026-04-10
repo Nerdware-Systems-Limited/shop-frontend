@@ -1,16 +1,17 @@
 import { useEffect, useState, useRef } from 'react';
 import { useDispatch, useSelector } from 'react-redux';
 import { Link, useSearchParams } from 'react-router-dom';
-import { Title, Meta, Link as HeadLink } from 'react-head';
+import { Helmet } from 'react-helmet-async';
 import { listInstallationJobs } from '../actions/Installationactions';
 import { ChevronLeft, ChevronRight, Search, X, SlidersHorizontal, Wrench, Car } from 'lucide-react';
 
+// ─── SEO Component ────────────────────────────────────────────────────────────
 // ─── SEO Component ────────────────────────────────────────────────────────────
 const InstallationsSEO = ({ count }) => {
   const title = 'Car Audio Installation Gallery — Sound Wave Audio Nairobi';
   const description = `Browse ${count || 'our'} professional car audio installation jobs by Sound Wave Audio Nairobi. Android radios, subwoofers, amplifiers, 360 cameras & full audio upgrades. See real results on Toyota, Mitsubishi, Subaru & more.`;
   const canonical = 'https://soundwaveaudio.co.ke/installations';
-
+ 
   const schema = {
     '@context': 'https://schema.org',
     '@type': 'CollectionPage',
@@ -24,25 +25,25 @@ const InstallationsSEO = ({ count }) => {
       address: { '@type': 'PostalAddress', addressLocality: 'Nairobi', addressCountry: 'KE' },
     },
   };
-
+ 
   return (
-    <>
-      <Title>{title}</Title>
-      <Meta name="description" content={description} />
-      <Meta name="keywords" content="car audio installation nairobi, android radio installation, subwoofer installation kenya, 360 camera install, amplifier installation nairobi, toyota audio upgrade, mitsubishi audio upgrade" />
-      <Meta name="robots" content="index, follow, max-snippet:-1, max-image-preview:large, max-video-preview:-1" />
-      <Meta property="og:title" content={title} />
-      <Meta property="og:description" content={description} />
-      <Meta property="og:url" content={canonical} />
-      <Meta property="og:type" content="website" />
-      <Meta property="og:site_name" content="Sound Wave Audio" />
-      <Meta property="og:locale" content="en_KE" />
-      <Meta name="twitter:card" content="summary_large_image" />
-      <Meta name="twitter:title" content={title} />
-      <Meta name="twitter:description" content={description} />
-      <HeadLink rel="canonical" href={canonical} />
-      <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: JSON.stringify(schema) }} />
-    </>
+    <Helmet>
+      <title>{title}</title>
+      <meta name="description" content={description} />
+      <meta name="keywords" content="car audio installation nairobi, android radio installation, subwoofer installation kenya, 360 camera install, amplifier installation nairobi, toyota audio upgrade, mitsubishi audio upgrade" />
+      <meta name="robots" content="index, follow, max-snippet:-1, max-image-preview:large, max-video-preview:-1" />
+      <meta property="og:title" content={title} />
+      <meta property="og:description" content={description} />
+      <meta property="og:url" content={canonical} />
+      <meta property="og:type" content="website" />
+      <meta property="og:site_name" content="Sound Wave Audio" />
+      <meta property="og:locale" content="en_KE" />
+      <meta name="twitter:card" content="summary_large_image" />
+      <meta name="twitter:title" content={title} />
+      <meta name="twitter:description" content={description} />
+      <link rel="canonical" href={canonical} />
+      <script type="application/ld+json">{JSON.stringify(schema)}</script>
+    </Helmet>
   );
 };
 

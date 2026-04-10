@@ -100,9 +100,7 @@ export const calculateTotals = () => (dispatch, getState) => {
     0
   );
 
-  const shippingPrice = itemsPrice > 5000 ? 0 : 200; // Free shipping over 5000
-  const taxPrice = itemsPrice * 0.16; // 16% VAT
-  const totalPrice = itemsPrice + shippingPrice + taxPrice;
+  const totalPrice = itemsPrice
 
   const totalDiscount = cartItems.reduce(
     (acc, item) => acc + (item.originalPrice - item.price) * item.qty,
@@ -113,8 +111,6 @@ export const calculateTotals = () => (dispatch, getState) => {
     type: CART_CALCULATE_TOTALS,
     payload: {
       itemsPrice: Number(itemsPrice.toFixed(2)),
-      shippingPrice: Number(shippingPrice.toFixed(2)),
-      taxPrice: Number(taxPrice.toFixed(2)),
       totalPrice: Number(totalPrice.toFixed(2)),
       totalDiscount: Number(totalDiscount.toFixed(2)),
     },

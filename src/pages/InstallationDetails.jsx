@@ -1,7 +1,7 @@
 import { useEffect, useState } from 'react';
 import { useDispatch, useSelector } from 'react-redux';
 import { useParams, Link, useNavigate } from 'react-router-dom';
-import { Title, Meta, Link as HeadLink } from 'react-head';
+import { Helmet } from 'react-helmet-async';
 import {
   getInstallationJobDetails,
   resetInstallationJobDetails,
@@ -23,8 +23,8 @@ import {
 // ─── SEO ──────────────────────────────────────────────────────────────────────
 const InstallationDetailSEO = ({ job }) => {
   if (!job?.id) return null;
-
-  const title = job.meta_title + " — Sound Wave Audio Nairobi" || job.title;
+ 
+  const title = (job.meta_title ? `${job.meta_title} \u2014 Sound Wave Audio Nairobi` : null) || job.display_title;
   const description =
     job.meta_description ||
     job.description ||
@@ -34,7 +34,7 @@ const InstallationDetailSEO = ({ job }) => {
     job.effective_og_image ||
     job.primary_after_image?.image ||
     'https://soundwaveaudio.co.ke/og-image.jpg';
-
+ 
   const schema = {
     '@context': 'https://schema.org',
     '@type': 'Service',
@@ -54,7 +54,7 @@ const InstallationDetailSEO = ({ job }) => {
     },
     ...(job.job_date && { datePublished: job.job_date }),
   };
-
+ 
   const breadcrumb = {
     '@context': 'https://schema.org',
     '@type': 'BreadcrumbList',
@@ -64,29 +64,29 @@ const InstallationDetailSEO = ({ job }) => {
       { '@type': 'ListItem', position: 3, name: title, item: canonical },
     ],
   };
-
+ 
   return (
-    <>
-      <Title>{title}</Title>
-      <Meta name="description" content={description} />
-      {job.seo_keywords && <Meta name="keywords" content={job.seo_keywords} />}
-      <Meta name="robots" content="index, follow, max-snippet:-1, max-image-preview:large, max-video-preview:-1" />
-      <Meta property="og:title" content={title} />
-      <Meta property="og:description" content={description} />
-      <Meta property="og:url" content={canonical} />
-      <Meta property="og:image" content={ogImage} />
-      <Meta property="og:image:width" content="1200" />
-      <Meta property="og:image:height" content="630" />
-      <Meta property="og:type" content="article" />
-      <Meta property="og:site_name" content="Sound Wave Audio" />
-      <Meta name="twitter:card" content="summary_large_image" />
-      <Meta name="twitter:title" content={title} />
-      <Meta name="twitter:description" content={description} />
-      <Meta name="twitter:image" content={ogImage} />
-      <HeadLink rel="canonical" href={canonical} />
-      <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: JSON.stringify(schema) }} />
-      <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: JSON.stringify(breadcrumb) }} />
-    </>
+    <Helmet>
+      <title>{title}</title>
+      <meta name="description" content={description} />
+      {job.seo_keywords && <meta name="keywords" content={job.seo_keywords} />}
+      <meta name="robots" content="index, follow, max-snippet:-1, max-image-preview:large, max-video-preview:-1" />
+      <meta property="og:title" content={title} />
+      <meta property="og:description" content={description} />
+      <meta property="og:url" content={canonical} />
+      <meta property="og:image" content={ogImage} />
+      <meta property="og:image:width" content="1200" />
+      <meta property="og:image:height" content="630" />
+      <meta property="og:type" content="article" />
+      <meta property="og:site_name" content="Sound Wave Audio" />
+      <meta name="twitter:card" content="summary_large_image" />
+      <meta name="twitter:title" content={title} />
+      <meta name="twitter:description" content={description} />
+      <meta name="twitter:image" content={ogImage} />
+      <link rel="canonical" href={canonical} />
+      <script type="application/ld+json">{JSON.stringify(schema)}</script>
+      <script type="application/ld+json">{JSON.stringify(breadcrumb)}</script>
+    </Helmet>
   );
 };
 

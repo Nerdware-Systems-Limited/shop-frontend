@@ -138,9 +138,9 @@ const MiniCart = ({ isOpen, onClose }) => {
               <ArrowRight className="w-4 h-4" />
             </Link>
 
-            <p className="text-xs text-center text-gray-500">
+            {/* <p className="text-xs text-center text-gray-500">
               Shipping & taxes calculated at checkout
-            </p>
+            </p> */}
           </div>
         )}
       </div>

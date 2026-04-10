@@ -7,7 +7,7 @@ import heroBanner2 from "@/assets/hero-banner-2.jpg";
 import heroBanner from "@/assets/hero-banner.jpg";
 import heroBanner4 from "@/assets/hero-banner-4.jpg";
 import AddToCartButton from '../components/products/AddToCartButton'
-import new_arrivals from "@/assets/new_arrivals.png"
+import new_arrivals from "@/assets/new_arrivals.jpg"
 
 
 // PropTypes can be added for validation if needed
@@ -164,7 +164,7 @@ const HeroSection = ({ featuredProducts = [], Link }) => {
               >
                 {/* Product image - First on mobile, second on desktop */}
                 <div className="flex-1 flex justify-center order-1 lg:order-2">
-                  <div className="relative w-72 h-72 md:w-96 md:h-96 lg:w-[28rem] lg:h-[28rem]">
+                  <div className="relative w-[clamp(14rem,50vw,28rem)] h-[clamp(14rem,50vw,28rem)]">
                     <div className="absolute inset-0 rounded-2xl bg-primary/10 blur-3xl" />
                     <img
                       src={product.primary_image}
@@ -179,15 +179,15 @@ const HeroSection = ({ featuredProducts = [], Link }) => {
                   <span className="inline-block px-4 py-1.5 text-xs font-semibold tracking-[0.15em] uppercase glass rounded-full text-white mb-5">
                     {product.brand_name} · {product.category_name}
                   </span>
-                  <h1 className="text-3xl md:text-5xl lg:text-6xl font-bold mb-4 leading-tight text-white">
+                  <h1 className="font-bold mb-4 leading-tight text-white text-[clamp(1.5rem,5vw,3.5rem)]">
                     {product.name}
                   </h1>
                   {product.short_description && (
-                    <p className="text-lg md:text-xl text-gray-200 mb-6 leading-relaxed">
+                    <p className="text-gray-200 mb-6 leading-relaxed text-[clamp(0.95rem,2.5vw,1.25rem)]">
                       {product.short_description}
                     </p>
                   )}
-                  <p className="text-3xl md:text-4xl font-bold text-emerald-400 mb-8">
+                  <p className="font-bold text-emerald-400 mb-8 text-[clamp(1.5rem,4vw,2.5rem)]">
                     {formatPrice(product.final_price)}
                   </p>
                   <div className="flex flex-col sm:flex-row gap-3 justify-center items-center w-full">

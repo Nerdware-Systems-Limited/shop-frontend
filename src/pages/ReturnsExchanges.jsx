@@ -1,6 +1,7 @@
 import React, { useState } from 'react';
 import { Link } from 'react-router-dom';
 import { RefreshCw, Shield, AlertCircle, CheckCircle, XCircle, Clock, Package, DollarSign, Truck } from 'lucide-react';
+import DefaultSEO from './DefaultSEO';
 
 const ReturnsExchanges = () => {
   const [selectedReason, setSelectedReason] = useState('');
@@ -33,6 +34,8 @@ const ReturnsExchanges = () => {
   ];
 
   return (
+    <>
+    <DefaultSEO />
     <div className="min-h-screen bg-gradient-to-b from-gray-50 to-white pt-24 pb-16">
       <div className="max-w-4xl mx-auto px-4">
         {/* Header */}
@@ -340,6 +343,7 @@ const ReturnsExchanges = () => {
         </div>
       </div>
     </div>
+    </>
   );
 };
 

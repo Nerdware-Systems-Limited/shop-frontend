@@ -8,6 +8,7 @@ import { Skeleton } from "@/components/ui/skeleton"
 import AddToCartButton from '../components/products/AddToCartButton'
 import HeroSection from './HeroSection';
 import BrandCatalog from '../components/products/BrandCatalog';
+import DefaultSEO from './DefaultSEO';
 
 const Home = () => {
   const dispatch = useDispatch();
@@ -50,6 +51,9 @@ const Home = () => {
   }
 
   return (
+    <>
+    <DefaultSEO />
+    
     <div className="min-h-screen">
       {/* Premium Hero Section */}
       <HeroSection 
@@ -184,6 +188,7 @@ const Home = () => {
         </div>
       </section>
     </div>
+    </>
   );
 };
 

@@ -2,15 +2,17 @@ import { useState, useEffect } from 'react'
 import { useDispatch, useSelector } from 'react-redux'
 import CheckoutSteps from '../../components/checkout/CheckoutSteps'
 import { savePaymentMethod } from '../../actions/cartActions'
-import { useNavigate } from 'react-router-dom'
+import { useNavigate, useOutletContext } from 'react-router-dom'
+
 
 import { Button } from "@/components/ui/button"
 import { CreditCard, Wallet, Banknote, Check, ArrowRight, ArrowLeft } from 'lucide-react'
 
-function Payment({ setCompleted, completed }) {
+function Payment() {
     const navigate = useNavigate()
     const dispatch = useDispatch()
 
+    const { setCompleted, completed } = useOutletContext()
     const [paymentMethod, setPaymentMethod] = useState('OnDelivery')
     const [mpesaNumber, setMpesaNumber] = useState("");
 

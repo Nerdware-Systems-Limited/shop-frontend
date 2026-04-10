@@ -86,7 +86,7 @@ function PlaceOrder({ setCompleted, completed }) {
     }, 0);
 
     const shippingPrice = Number(selectedShipping?.cost || 0);
-    const taxRate = 0.1; // 10% tax
+    const taxRate = 0; // 10% tax
     const taxPrice = itemsPrice * taxRate;
     const totalPrice = itemsPrice + shippingPrice + taxPrice;
 
@@ -603,7 +603,7 @@ function PlaceOrder({ setCompleted, completed }) {
                   
                   {/* Tax */}
                   <div className="flex justify-between">
-                    <span className="text-gray-600">Tax (10%)</span>
+                    <span className="text-gray-600">Tax (0%)</span>
                     <span className="font-medium">KSH {orderSummary.taxPrice.toFixed(2)}</span>
                   </div>
                   
@@ -694,7 +694,7 @@ function PlaceOrder({ setCompleted, completed }) {
                   {/* Back Button */}
                   <Button
                     variant="outline"
-                    onClick={() => navigate('/checkout/payment')}
+                    onClick={() => navigate('/payment')}
                     disabled={loading}
                     className="w-full"
                   >

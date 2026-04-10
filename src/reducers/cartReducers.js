@@ -19,8 +19,6 @@ const initialState = {
     ? JSON.parse(localStorage.getItem('paymentMethod'))
     : '',
   itemsPrice: 0,
-  shippingPrice: 0,
-  taxPrice: 0,
   totalPrice: 0,
   totalDiscount: 0,
 };
@@ -68,8 +66,6 @@ export const cartReducer = (state = initialState, action) => {
         ...state,
         cartItems: [],
         itemsPrice: 0,
-        shippingPrice: 0,
-        taxPrice: 0,
         totalPrice: 0,
         totalDiscount: 0,
       };

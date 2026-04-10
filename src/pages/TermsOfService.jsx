@@ -1,11 +1,14 @@
 import React from 'react';
 import { Link } from 'react-router-dom';
 import { Shield, FileText, AlertCircle, Check, Clock, Mail, Phone, MapPin } from 'lucide-react';
+import DefaultSEO from './DefaultSEO';
 
 const TermsOfService = () => {
   const lastUpdated = "January 1, 2026";
 
   return (
+    <>
+    <DefaultSEO />
     <div className="min-h-screen bg-white pt-24 pb-16">
       <div className="max-w-4xl mx-auto px-4">
         {/* Header */}
@@ -243,6 +246,7 @@ const TermsOfService = () => {
         </div>
       </div>
     </div>
+    </>
   );
 };
 

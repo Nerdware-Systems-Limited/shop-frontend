@@ -1,11 +1,14 @@
 import React from 'react';
 import { Link } from 'react-router-dom';
 import { Shield, Lock, Eye, Share2, Mail, Phone, Calendar } from 'lucide-react';
+import DefaultSEO from './DefaultSEO';
 
 const PrivacyPolicy = () => {
   const lastUpdated = "January 1, 2026";
 
   return (
+    <>
+    <DefaultSEO />
     <div className="min-h-screen bg-gradient-to-b from-gray-50 to-white pt-24 pb-16">
       <div className="max-w-4xl mx-auto px-4">
         {/* Header */}
@@ -294,6 +297,7 @@ const PrivacyPolicy = () => {
         </div>
       </div>
     </div>
+    </>
   );
 };
 

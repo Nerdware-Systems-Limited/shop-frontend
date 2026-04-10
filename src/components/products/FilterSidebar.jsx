@@ -13,8 +13,8 @@ const FilterSidebar = ({ filters, onFilterChange, onClearFilters, onClose }) => 
   const [brandSearch, setBrandSearch] = useState('');
   const [priceError, setPriceError] = useState('');
 
-  console.log(brands)
-  console.log(categories)
+  // console.log(brands)
+  // console.log(categories)
 
   // Load categories and brands on mount
   useEffect(() => {

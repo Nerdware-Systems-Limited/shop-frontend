@@ -406,7 +406,7 @@ const ProductDetails = () => {
     if (imageObj.image) {
       const imgPath = imageObj.image;
       if (imgPath.startsWith('http')) return imgPath;
-      return `${import.meta.env.VITE_API_URL || 'https://shop-backend-9dtg.onrender.com'}/media/${imgPath}`;
+      return `${import.meta.env.VITE_API_URL || 'https://shop.nerdwaretechnologies.com'}/media/${imgPath}`;
     }
     
     return null;
@@ -708,16 +708,6 @@ const ProductDetails = () => {
                   >
                     Call Now
                   </button>
-
-                  {/* Cart Status */}
-                  {cartItem && (
-                    <div className="flex items-center justify-center gap-2 bg-blue-50 text-blue-700 px-4 py-2 rounded-lg border border-blue-200">
-                      <Check className="w-3.5 h-3.5" strokeWidth={2.5} />
-                      <p className="text-xs font-semibold">
-                        {cartItem.qty} {cartItem.qty === 1 ? 'item' : 'items'} in cart
-                      </p>
-                    </div>
-                  )}
                 </div>
               )}
 

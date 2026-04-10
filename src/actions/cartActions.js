@@ -12,7 +12,7 @@ import {
 
 // Add item to cart
 export const addToCart = (product, qty = 1) => async (dispatch, getState) => {
-  console.log('Adding to cart:', product, 'Quantity:', qty);
+  // console.log('Adding to cart:', product, 'Quantity:', qty);
   try {
     // const { product } = await apiClient.get(`/products/${productId}/`);
 
@@ -96,11 +96,12 @@ export const calculateTotals = () => (dispatch, getState) => {
   const { cartItems } = getState().cart;
 
   const itemsPrice = cartItems.reduce(
-    (acc, item) => acc + item.price * item.qty,
+    (acc, item) => acc + item.price || item.originalPrice * item.qty,
     0
   );
 
   const totalPrice = itemsPrice
+  console.log("itemsPrice", cartItems)
 
   const totalDiscount = cartItems.reduce(
     (acc, item) => acc + (item.originalPrice - item.price) * item.qty,

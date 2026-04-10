@@ -6,12 +6,18 @@ import { removeFromCart } from '../../actions/cartActions';
 const MiniCart = ({ isOpen, onClose }) => {
   const dispatch = useDispatch();
   const { cartItems, itemsPrice } = useSelector((state) => state.cart);
+  
 
   const handleRemove = (productId) => {
     dispatch(removeFromCart(productId));
   };
 
   if (!isOpen) return null;
+
+  const itemsTotal = cartItems.reduce(
+    (acc, item) => acc + item.price || item.originalPrice * item.qty,
+    0
+  );
 
   return (
     <>
@@ -87,7 +93,7 @@ const MiniCart = ({ isOpen, onClose }) => {
                     <div className="flex items-center justify-between">
                       <div>
                         <p className="text-sm font-semibold">
-                          Ksh {item.price}
+                          Ksh {item.price || item.originalPrice}
                         </p>
                         <p className="text-xs text-gray-500">Qty: {item.qty}</p>
                       </div>
@@ -113,7 +119,7 @@ const MiniCart = ({ isOpen, onClose }) => {
             <div className="flex justify-between items-center mb-4">
               <span className="text-gray-600">Subtotal</span>
               <span className="text-2xl font-bold">
-                Ksh {itemsPrice}
+                Ksh { itemsTotal || itemsPrice}
               </span>
             </div>
 
